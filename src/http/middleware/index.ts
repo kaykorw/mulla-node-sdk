@@ -23,7 +23,6 @@ export interface MiddlewareHandler {
 export type MiddlewareFunction = (request: Request, next: Next) => Promise<Response>;
 export type Middleware = MiddlewareHandler | MiddlewareFunction;
 
-/** Runs a request through an ordered list of middleware, ending at the transport. The first one is the outermost. */
 export class Pipeline {
   readonly #handler: Next;
 
@@ -42,7 +41,6 @@ export class Pipeline {
   }
 }
 
-/** Adds the secret API key header. */
 export class AuthMiddleware implements MiddlewareHandler {
   static readonly HEADER = 'x-api-key';
   readonly #apiKey: string;
@@ -60,11 +58,6 @@ export class AuthMiddleware implements MiddlewareHandler {
   }
 }
 
-/**
- * Adds the client context headers Mulla requires on write requests
- * (x-platform, x-device-id, User-Agent) plus Accept/Content-Type and language.
- * Per-request headers already set (e.g. a per-call language) are left untouched.
- */
 export class ClientContextMiddleware implements MiddlewareHandler {
   constructor(
     private readonly deviceId: string,
@@ -104,10 +97,6 @@ export class ClientContextMiddleware implements MiddlewareHandler {
   }
 }
 
-/**
- * Gives every POST an idempotency key (UUIDv4) unless the caller supplied one.
- * Sits before RetryMiddleware, so every retry of a request reuses the same key.
- */
 export class IdempotencyMiddleware implements MiddlewareHandler {
   static readonly HEADER = 'x-idempotency-key';
 
@@ -120,17 +109,11 @@ export class IdempotencyMiddleware implements MiddlewareHandler {
   }
 }
 
-/** Waits the given number of milliseconds. */
 export type Sleep = (ms: number) => Promise<void>;
 
 export const defaultSleep: Sleep = (ms) =>
   ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
-/**
- * Re-sends failed requests according to a RetryStrategy. IdempotencyMiddleware runs first,
- * so every attempt carries the same idempotency key. Which writes are safe to repeat is
- * decided by the strategy (see ExponentialBackoff).
- */
 export class RetryMiddleware implements MiddlewareHandler {
   constructor(
     private readonly strategy: RetryStrategy,
@@ -166,7 +149,6 @@ export class RetryMiddleware implements MiddlewareHandler {
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type LogFunction = (level: LogLevel, message: string, context: Record<string, unknown>) => void;
-/** Anything with console-style methods: console, pino, winston, bunyan... */
 export interface LoggerObject {
   debug(...args: unknown[]): unknown;
   info(...args: unknown[]): unknown;
@@ -175,10 +157,6 @@ export interface LoggerObject {
 }
 export type Logger = LogFunction | LoggerObject;
 
-/**
- * Logs every attempt (method, URL, status, duration). Never logs the API key, bodies,
- * or secret query values such as checkout tokens.
- */
 export class LoggingMiddleware implements MiddlewareHandler {
   readonly #log: LogFunction;
 

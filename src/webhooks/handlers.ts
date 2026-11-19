@@ -6,28 +6,16 @@ import type { RawBody } from './verifiers.js';
 import { Webhook, type WebhookHeaders } from './webhook.js';
 
 export interface WebhookHandlerOptions {
-  /** Your webhook endpoint's signing secret. */
   secret: string;
-  /** Listener per event type, e.g. { 'charge.success': async (event) => markPaid(event) }. */
   on?: { [Type in WebhookEventType]?: EventListener } & Record<string, EventListener | undefined>;
-  /** Called for every verified event, after the typed listener. */
   onAny?: EventListener;
-  /** Use your own dispatcher instead of `on` / `onAny`. */
   dispatcher?: EventDispatcher;
-  /**
-   * Mulla retries deliveries. Return true when you already handled this event
-   * (e.g. look up `event.id` in your database); it is then acknowledged without
-   * calling the listeners.
-   */
   isDuplicate?: (event: Event) => boolean | Promise<boolean>;
-  /** Called when a listener throws (default: console.error). Mulla gets a 500 and retries later. */
   onError?: (error: unknown, event: Event) => void;
-  /** Maximum age of timestamped (v2) events in seconds. Default 300. */
   toleranceSeconds?: number;
 }
 
 export interface WebhookResult {
-  /** 200 handled (or duplicate), 400 bad signature or body, 500 a listener threw. */
   status: 200 | 400 | 500;
   body: { received: boolean; duplicate?: boolean; error?: string };
   event: Event | null;
@@ -100,18 +88,14 @@ export function createWebhookHandler(options: WebhookHandlerOptions): (request: 
   };
 }
 
-/** The parts of Node's IncomingMessage (or Express/NestJS request) the handler uses. */
 export interface NodeRequestLike extends AsyncIterable<unknown> {
   method?: string | undefined;
   headers: Readonly<Record<string, string | readonly string[] | undefined>>;
-  /** Set by express.raw() / express.text() (or by express.json() — which cannot be verified). */
   body?: unknown;
-  /** Set by NestJS with `rawBody: true`. */
   rawBody?: unknown;
   readableEnded?: boolean;
 }
 
-/** The parts of Node's ServerResponse (or Express response) the handler uses. */
 export interface NodeResponseLike {
   statusCode: number;
   setHeader(name: string, value: string): unknown;

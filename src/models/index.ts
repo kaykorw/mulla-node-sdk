@@ -25,14 +25,8 @@ import {
 export { Collection, CollectionPromise } from './collection.js';
 export { Model, type RawData } from './model.js';
 
-/**
- * A charge collects money from a customer's mobile money wallet.
- * It is created PENDING; the customer approves on their phone; it becomes
- * SUCCESSFUL, FAILED, or EXPIRED (after 10 minutes).
- */
 export class Charge extends Model {
   readonly id: string;
-  /** Human-friendly reference, e.g. "CHG..." */
   readonly reference: string | null;
   readonly amount: number | null;
   readonly feeAmount: number | null;
@@ -90,14 +84,8 @@ export class Charge extends Model {
   }
 }
 
-/**
- * A hosted checkout session. Redirect your customer to `checkoutUrl`; Mulla sends
- * them back to `successUrl` or `cancelUrl`. Always confirm the result server-side
- * (webhook or `mulla.charges.retrieve(session.charge)`): return URLs are not signed.
- */
 export class CheckoutSession extends Model {
   readonly id: string;
-  /** Id of the underlying charge. */
   readonly charge: string | null;
   readonly reference: string | null;
   readonly amount: number | null;
@@ -110,11 +98,8 @@ export class CheckoutSession extends Model {
   readonly status: ChargeStatus | null;
   readonly successUrl: string | null;
   readonly cancelUrl: string | null;
-  /** Only returned when the session is created. */
   readonly checkoutUrl: string | null;
-  /** Only returned when the session is created. Needed for the public checkout endpoints. */
   readonly token: string | null;
-  /** Keys: name, merchant_code, logo_url, support_email, support_phone. */
   readonly merchant: Record<string, unknown> | null;
   readonly expiresAt: Date | null;
 
@@ -148,10 +133,6 @@ export class CheckoutSession extends Model {
   }
 }
 
-/**
- * A payout sends money from your Mulla balance to a mobile money wallet.
- * The amount is reserved from your balance as soon as the payout is created.
- */
 export class Payout extends Model {
   readonly id: string;
   readonly provider: Provider | null;
@@ -199,10 +180,6 @@ export class Payout extends Model {
   }
 }
 
-/**
- * A recharge tops up your own Mulla balance from a mobile money wallet
- * (for example, to fund payouts).
- */
 export class Recharge extends Model {
   readonly id: string;
   readonly reference: string | null;
@@ -267,7 +244,6 @@ export class InvoiceItem extends Model {
   }
 }
 
-/** An invoice your customer can pay through its public link. */
 export class Invoice extends Model {
   readonly id: string;
   readonly invoiceNumber: string | null;
@@ -325,7 +301,6 @@ export class Invoice extends Model {
   }
 }
 
-/** One provider payment attempt (e.g. a payment made against an invoice). */
 export class PaymentTransaction extends Model {
   readonly id: string;
   readonly transactionId: string | null;
@@ -363,11 +338,9 @@ export class PaymentTransaction extends Model {
   }
 }
 
-/** Result of paying an invoice: the started payment plus instructions for the customer. */
 export class PaymentInitiation extends Model {
   readonly payment: PaymentTransaction | null;
   readonly message: string | null;
-  /** Text to show the customer, e.g. "Approve the prompt on your phone". */
   readonly instructions: string | null;
 
   constructor(data: RawData) {
@@ -409,17 +382,12 @@ export class Customer extends Model {
   }
 }
 
-/**
- * Your account's webhook configuration (one per merchant).
- * The full `secret` is only returned on create and rotateSecret(); otherwise it is masked.
- */
 export class WebhookEndpoint extends Model {
   readonly id: string;
   readonly url: string | null;
   readonly secret: string | null;
   readonly isActive: boolean | null;
   readonly events: readonly string[];
-  /** IP addresses Mulla sends webhooks from; useful for firewall allowlists. */
   readonly egressIps: readonly string[];
   readonly signatureHeader: string | null;
   readonly signatureAlgorithm: string | null;
@@ -439,9 +407,7 @@ export class WebhookEndpoint extends Model {
   }
 }
 
-/** Outcome of sending a test webhook to your endpoint. */
 export class WebhookTestResult extends Model {
-  /** True when your endpoint answered 2xx. */
   readonly ok: boolean;
   readonly statusCode: number | null;
   readonly responseBody: string | null;
@@ -456,9 +422,4 @@ export class WebhookTestResult extends Model {
   }
 }
 
-/**
- * Generic object for reference data (banks, branches, countries, currencies, scopes)
- * and short responses such as {"message": "..."}. Read fields with `get()` or `raw`:
- * `bank.get('name')`, `bank.raw.swift`.
- */
 export class MullaObject extends Model {}

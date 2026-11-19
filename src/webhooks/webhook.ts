@@ -3,19 +3,13 @@ import { InvalidArgumentError, SignatureVerificationError } from '../errors.js';
 import { Event } from './event.js';
 import { V1SignatureVerifier, V2SignatureVerifier, type RawBody, type SignatureVerifier } from './verifiers.js';
 
-/**
- * Request headers in any common shape: a fetch `Headers` object, Node's `req.headers`,
- * a plain object, or just the x-webhook-signature value.
- */
 export type WebhookHeaders =
   | { forEach(callback: (value: string, name: string) => void): void }
   | Readonly<Record<string, string | readonly string[] | undefined>>
   | string;
 
 export interface WebhookOptions {
-  /** Maximum age of a timestamped (v2) event, in seconds. Default 300; 0 disables the check. */
   toleranceSeconds?: number;
-  /** Defaults to [v2 (timestamped), v1]. */
   verifiers?: SignatureVerifier[];
 }
 
@@ -45,12 +39,6 @@ export class Webhook {
     ];
   }
 
-  /**
-   * Verifies the signature and returns the event.
-   *
-   * @param payload the RAW request body (string, Buffer or Uint8Array), not parsed JSON
-   * @throws SignatureVerificationError
-   */
   static constructEvent(
     payload: RawBody,
     headers: WebhookHeaders,
@@ -60,7 +48,6 @@ export class Webhook {
     return new Webhook(secret, options).parse(payload, headers);
   }
 
-  /** @throws SignatureVerificationError */
   parse(payload: RawBody, headers: WebhookHeaders): Event {
     if (typeof payload !== 'string' && !(payload instanceof Uint8Array)) {
       throw new SignatureVerificationError(
@@ -102,7 +89,6 @@ export class Webhook {
   }
 }
 
-/** @internal Lower-cased name => first value. */
 export function normalizeHeaders(headers: Exclude<WebhookHeaders, string>): Record<string, string> {
   const out: Record<string, string> = {};
   if (typeof (headers as { forEach?: unknown }).forEach === 'function' && !Array.isArray(headers)) {

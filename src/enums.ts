@@ -14,7 +14,6 @@ const PROVIDER_LABELS: Record<Provider, string> = {
   AIRTEL_RW: 'Airtel Money',
 };
 
-/** Display name of a provider, e.g. "MTN Mobile Money". */
 export function providerLabel(provider: Provider): string {
   return PROVIDER_LABELS[provider];
 }
@@ -91,7 +90,6 @@ export const ApiScope = {
 } as const;
 export type ApiScope = (typeof ApiScope)[keyof typeof ApiScope];
 
-/** Final statuses: the object will not change any more. */
 export const FINAL_STATUSES = {
   charge: [ChargeStatus.SUCCESSFUL, ChargeStatus.FAILED, ChargeStatus.EXPIRED] as readonly ChargeStatus[],
   payout: [
@@ -110,7 +108,6 @@ export const FINAL_STATUSES = {
   ] as readonly PaymentStatus[],
 } as const;
 
-/** @internal Returns the value when it is one of the enum's values, otherwise null. */
 export function enumValue<T extends string>(values: Record<string, T>, value: unknown): T | null {
   return typeof value === 'string' && (Object.values(values) as string[]).includes(value) ? (value as T) : null;
 }

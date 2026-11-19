@@ -2,14 +2,7 @@ import { ConnectionError, isNumeric } from '../errors.js';
 import type { Request } from './request.js';
 import type { Response } from './response.js';
 
-/** Strategy: decides whether a failed attempt is retried and how long to wait. */
 export interface RetryStrategy {
-  /**
-   * @param request  the request that failed (method matters: writes are not always safe to repeat)
-   * @param attempt  1 for the first attempt
-   * @param response null when the request failed at the network level
-   * @param error    the connection error, if any
-   */
   shouldRetry(request: Request, attempt: number, response: Response | null, error: unknown): boolean;
 
   /** Milliseconds to wait before the next attempt. */
@@ -18,16 +11,13 @@ export interface RetryStrategy {
 
 export interface ExponentialBackoffOptions {
   maxRetries?: number;
-  /** First delay in ms (default 500). */
   baseDelay?: number;
-  /** Longest delay in ms (default 8000). A Retry-After longer than this is not waited for. */
   maxDelay?: number;
   jitter?: boolean;
 }
 
 const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS'];
 const RETRYABLE_STATUSES = [408, 429, 500, 502, 503, 504];
-/** Statuses meaning the request was rejected before being processed. */
 const NOT_PROCESSED_STATUSES = [429, 503];
 
 /**

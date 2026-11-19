@@ -9,11 +9,8 @@ import { toApi, type SchemaName, type WaitOptions } from '../params.js';
 import { encodeRfc3986 } from '../support/normalizer.js';
 import { INSPECT } from '../support/runtime.js';
 
-/** Template Method: shared request flow for every service. */
 export abstract class BaseService {
-  /** Client property name, used in error messages (e.g. "charges"). */
   protected abstract readonly resource: string;
-  /** Scope the API key needs for this service, named in "scope denied" errors. */
   protected readonly scope: ApiScope | null = null;
 
   constructor(
@@ -21,7 +18,6 @@ export abstract class BaseService {
     protected readonly config: MullaConfig,
   ) {}
 
-  /** Sends a request and, when the key lacks a scope, says which one. */
   protected async call(
     method: string,
     path: string,
@@ -121,15 +117,10 @@ export abstract class BaseService {
     });
   }
 
-  /** Maps camelCase params to the API's fields, rejecting unknown or missing ones. */
   protected params(method: string, schema: SchemaName, input: unknown): Record<string, unknown> {
     return toApi(`${this.resource}.${method}()`, schema, input);
   }
 
-  /**
-   * Polls `fetch` until the returned model reports isFinal() or the timeout passes.
-   * Returns the last fetched model either way; check its status.
-   */
   protected async pollUntilFinal<T extends Model & { isFinal(): boolean }>(
     fetch: () => Promise<T>,
     { timeoutMs = 120_000, intervalMs = 5_000 }: WaitOptions = {},
@@ -148,7 +139,6 @@ export abstract class BaseService {
     }
   }
 
-  /** URL-encodes an id after checking it is usable in a path. */
   protected static id(id: string, label = 'id'): string {
     if (typeof id !== 'string' || id.trim() === '') {
       throw new InvalidArgumentError(`The ${label} cannot be empty.`);

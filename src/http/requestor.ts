@@ -19,8 +19,6 @@ import type { RequestOptions } from './request-options.js';
  *
  * Pipeline order (outermost first):
  *   ClientContext -> Auth -> Idempotency -> Retry -> [your middleware] -> Logging -> transport
- *
- * @internal
  */
 export class ApiRequestor {
   readonly #pipeline: Pipeline;
@@ -40,7 +38,6 @@ export class ApiRequestor {
     this.#pipeline = new Pipeline(config.transport, middleware);
   }
 
-  /** @returns the decoded JSON response (null when empty) */
   async request(
     method: string,
     path: string,

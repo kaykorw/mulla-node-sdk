@@ -2,48 +2,35 @@ import type { ChargeStatus, Currency, InvoiceStatus, PayoutStatus, Provider, Rec
 import { InvalidArgumentError } from './errors.js';
 import { isPlainObject, normalize } from './support/normalizer.js';
 
-/** Known values autocomplete; any other string is still accepted (for values added later). */
 type Open<T extends string> = T | (string & {});
 
-/** Your own key/value data, returned on the object (e.g. { orderId: 1001 }). Sent as-is. */
 export type Metadata = Record<string, unknown>;
 
-/** A Mulla customer id, or `{ id }`. */
 export type CustomerRef = string | { id: string };
 
-/** Fields shared by direct charges and checkout sessions. */
 export interface ChargeFields {
   /** Amount in the currency's major unit (RWF). Minimum 10. */
   amount: number;
   currency?: Open<Currency>;
-  /** Short description shown to the customer, e.g. "Order #1001". */
   reason?: string;
-  /** Name of the app/site that created the charge (max 255 chars). */
   application?: string;
   notes?: string;
   billingDetails?: Record<string, unknown>;
   shippingDetails?: Record<string, unknown>;
   metadata?: Metadata;
-  /** Link the charge to an existing Mulla customer. */
   customer?: CustomerRef;
 }
 
-/** Direct charge: sends a payment prompt to the customer's phone. */
 export interface InitiateChargeParams extends ChargeFields {
   provider: Open<Provider>;
-  /** Customer's mobile money number, e.g. "250788000000". */
   phoneNumber: string;
 }
 
-/** Hosted checkout: Mulla's page collects the provider and phone number. */
 export interface CreateCheckoutParams extends ChargeFields {
-  /** Where the customer lands after paying. Confirm the payment server-side. */
   successUrl: string;
-  /** Where the customer lands if they cancel. */
   cancelUrl: string;
 }
 
-/** Send money from your Mulla balance to a phone. */
 export interface CreatePayoutParams {
   provider: Open<Provider>;
   amount: number;
@@ -52,7 +39,6 @@ export interface CreatePayoutParams {
   metadata?: Metadata;
 }
 
-/** Top up your Mulla balance from a mobile money wallet. */
 export interface InitiateRechargeParams {
   provider: Open<Provider>;
   amount: number;
@@ -61,7 +47,6 @@ export interface InitiateRechargeParams {
   metadata?: Metadata;
 }
 
-/** Create or update a customer. fullName is required in both cases. */
 export interface CustomerParams {
   fullName: string;
   email?: string;
@@ -95,7 +80,6 @@ export interface CreateInvoiceParams {
   metadata?: Metadata;
 }
 
-/** Every field is optional on update. */
 export type UpdateInvoiceParams = Partial<CreateInvoiceParams>;
 
 export interface PayParams {
@@ -109,7 +93,6 @@ export interface PayInvoiceParams extends PayParams {
 
 export interface CreateWebhookEndpointParams {
   url: string;
-  /** Default true. */
   isActive?: boolean;
 }
 
@@ -124,8 +107,6 @@ export interface WaitOptions {
   /** Time between polls in ms (default 5000, minimum 1000). */
   intervalMs?: number;
 }
-
-// ---- list filters ----------------------------------------------------------------------
 
 export interface PageFilters {
   page?: number;
@@ -160,7 +141,6 @@ export interface RechargeListFilters extends PageFilters, DateFilters {
 export interface InvoiceListFilters extends PageFilters, SortFilters, DateFilters {
   status?: Open<InvoiceStatus>;
   keyword?: string;
-  /** Customer id. */
   customer?: string;
 }
 
@@ -170,14 +150,12 @@ export interface CustomerListFilters extends PageFilters, SortFilters {
 }
 
 export interface BankFilters extends PageFilters {
-  /** Required, e.g. "RW". */
   country: string;
   keyword?: string;
   name?: string;
   swift?: string;
 }
 
-/** `code` or `swift` is required. */
 export interface BankBranchFilters extends PageFilters {
   code?: string;
   swift?: string;
@@ -201,10 +179,7 @@ export interface ScopeFilters extends PageFilters {
   keyword?: string;
 }
 
-// ---- mapping to the API's field names --------------------------------------------------
-
 type Transform = (value: unknown) => unknown;
-/** camelCase SDK name => API name, or [API name, transform]. */
 export type FieldMap = Readonly<Record<string, string | readonly [string, Transform]>>;
 
 const customerRef: Transform = (value) => (typeof value === 'string' ? { id: value } : value);
@@ -253,7 +228,6 @@ const PAGE: FieldMap = { page: 'page', limit: 'limit' };
 const SORT: FieldMap = { sortField: 'sortField', sortDirection: 'sortDirection' };
 const DATES: FieldMap = { startDate: 'start_date', endDate: 'end_date' };
 
-/** @internal Field maps and required fields for every request body and filter. */
 export const SCHEMAS = {
   initiateCharge: {
     fields: { ...CHARGE_FIELDS, provider: 'provider', phoneNumber: 'phone_number' },
@@ -332,10 +306,6 @@ export const SCHEMAS = {
 
 export type SchemaName = keyof typeof SCHEMAS;
 
-/**
- * @internal Maps SDK params to the API's field names. Unknown keys and missing required fields
- * are reported before anything is sent (the API rejects unknown fields too).
- */
 export function toApi(context: string, schema: SchemaName, input: unknown): Record<string, unknown> {
   const { fields, required } = SCHEMAS[schema];
 

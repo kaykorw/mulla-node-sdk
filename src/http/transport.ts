@@ -3,19 +3,12 @@ import { redactUrl } from '../support/redactor.js';
 import type { Request } from './request.js';
 import { Response } from './response.js';
 
-/**
- * Adapter target: anything that can send an HTTP request.
- *
- * Implement it to plug Mulla into your own HTTP stack. Error statuses must be returned
- * as a Response, not thrown; only network failures throw (as ConnectionError).
- */
 export interface Transport {
   send(request: Request): Promise<Response>;
 }
 
 export type FetchFunction = (input: string, init: globalThis.RequestInit) => Promise<globalThis.Response>;
 
-/** Network errors that happen before any byte of the request is sent. */
 const NOT_SENT_CODES = new Set([
   'ENOTFOUND',
   'EAI_AGAIN',

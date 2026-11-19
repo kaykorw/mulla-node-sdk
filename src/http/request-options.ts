@@ -1,27 +1,17 @@
 import { InvalidArgumentError } from '../errors.js';
 import { isUuid } from '../support/uuid.js';
 
-/**
- * Per-request overrides. Every service method accepts them as the last argument:
- *
- *     await mulla.charges.initiate(params, { idempotencyKey: order.mullaKey, lang: 'fr' });
- */
 export interface RequestOptions {
-  /** A UUID stored with your order and reused on your own retries. Generated for you when omitted. */
   idempotencyKey?: string;
-  /** Language of API messages for this request: en, fr, rw, sw. */
   lang?: string;
   /** Timeout in milliseconds for this request. */
   timeout?: number;
-  /** Extra headers for this request only. */
   headers?: Record<string, string>;
-  /** Cancels the request (and its retries) when aborted. */
   signal?: AbortSignal;
 }
 
 const ALLOWED = ['idempotencyKey', 'lang', 'timeout', 'headers', 'signal'];
 
-/** @internal */
 export function validateRequestOptions(options: RequestOptions | undefined): RequestOptions {
   if (options === undefined || options === null) {
     return {};

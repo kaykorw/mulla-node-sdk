@@ -44,20 +44,14 @@ import { BaseService } from './base.js';
 
 export { BaseService } from './base.js';
 
-/** Collect money from customers. Requires the CHARGES scope. */
 export class ChargeService extends BaseService {
   protected readonly resource = 'charges';
   protected override readonly scope = ApiScope.CHARGES;
 
-  /**
-   * Sends a payment prompt to the customer's phone. Returns a PENDING charge;
-   * wait for the webhook or call waitForFinalStatus().
-   */
   async initiate(params: InitiateChargeParams, options?: RequestOptions): Promise<Charge> {
     return this.postModel(Charge, 'charges/initiate', this.params('initiate', 'initiateCharge', params), options);
   }
 
-  /** Creates a hosted checkout session. Redirect the customer to `session.checkoutUrl`. */
   async createCheckout(params: CreateCheckoutParams, options?: RequestOptions): Promise<CheckoutSession> {
     return this.postModel(
       CheckoutSession,
@@ -71,33 +65,21 @@ export class ChargeService extends BaseService {
     return this.getModel(Charge, `charges/${BaseService.id(id, 'charge id')}`, {}, options);
   }
 
-  /** Await it for one page, or `for await` it to walk every page. */
   list(filters: ChargeListFilters = {}, options?: RequestOptions): CollectionPromise<Charge> {
     return this.listModels(Charge, 'charges', () => this.params('list', 'chargeFilters', filters), options);
   }
 
-  /**
-   * Polls the charge until it is SUCCESSFUL, FAILED or EXPIRED, or until the timeout.
-   * Returns the latest charge either way. Prefer webhooks in production; use this for
-   * scripts, CLIs, or as a fallback.
-   */
   async waitForFinalStatus(id: string, options?: WaitOptions): Promise<Charge> {
     return this.pollUntilFinal(() => this.retrieve(id), options);
   }
 }
 
-/**
- * Public checkout endpoints, authorised by the session token (not by your API key).
- * Use these to build your own checkout UI on top of a session created with
- * `mulla.charges.createCheckout()`.
- */
 export class CheckoutService extends BaseService {
   protected readonly resource = 'checkout';
   async retrieve(id: string, token: string, options?: RequestOptions): Promise<CheckoutSession> {
     return this.getModel(CheckoutSession, `checkout/${BaseService.id(id, 'checkout id')}`, { token }, options);
   }
 
-  /** Starts payment of a checkout session: sends the prompt to the customer's phone. */
   async pay(id: string, token: string, params: PayParams, options?: RequestOptions): Promise<CheckoutSession> {
     return this.send(
       CheckoutSession,
@@ -109,24 +91,15 @@ export class CheckoutService extends BaseService {
     );
   }
 
-  /**
-   * URL of the Server-Sent Events stream for a session. Browsers can listen to it with
-   * `new EventSource(url)` to get live status updates without polling.
-   */
   eventsUrl(id: string, token: string): string {
     return `${this.config.baseUrl}/checkout/${BaseService.id(id, 'checkout id')}/events?token=${encodeRfc3986(token)}`;
   }
 }
 
-/** Send money to mobile money wallets. Requires the PAYOUTS scope. */
 export class PayoutService extends BaseService {
   protected readonly resource = 'payouts';
   protected override readonly scope = ApiScope.PAYOUTS;
 
-  /**
-   * The amount is reserved from your balance immediately.
-   * Throws InvalidRequestError (INSUFFICIENT_BALANCE) when your balance is too low.
-   */
   async initiate(params: CreatePayoutParams, options?: RequestOptions): Promise<Payout> {
     return this.postModel(Payout, 'payouts/initiate', this.params('initiate', 'createPayout', params), options);
   }
@@ -144,7 +117,6 @@ export class PayoutService extends BaseService {
   }
 }
 
-/** Top up your Mulla balance. Requires the RECHARGES scope. */
 export class RechargeService extends BaseService {
   protected readonly resource = 'recharges';
   protected override readonly scope = ApiScope.RECHARGES;
@@ -166,7 +138,6 @@ export class RechargeService extends BaseService {
   }
 }
 
-/** Invoices and invoice payments. Requires the INVOICES scope (except the public methods). */
 export class InvoiceService extends BaseService {
   protected readonly resource = 'invoices';
   protected override readonly scope = ApiScope.INVOICES;
@@ -192,7 +163,6 @@ export class InvoiceService extends BaseService {
     );
   }
 
-  /** Allowed transitions: ISSUED, CANCELLED, OVERDUE. */
   async updateStatus(id: string, status: InvoiceStatus | (string & {}), options?: RequestOptions): Promise<Invoice> {
     if (typeof status !== 'string' || status === '') {
       throw new InvalidArgumentError('invoices.updateStatus() needs a status, e.g. InvoiceStatus.CANCELLED.');
@@ -219,12 +189,10 @@ export class InvoiceService extends BaseService {
     );
   }
 
-  /** Public view of an invoice (what the customer sees). */
   async retrievePublic(id: string, options?: RequestOptions): Promise<Invoice> {
     return this.getModel(Invoice, `invoice/${BaseService.id(id, 'invoice id')}`, {}, options);
   }
 
-  /** Public: starts payment of an invoice from the customer's phone. */
   async pay(id: string, params: PayInvoiceParams, options?: RequestOptions): Promise<PaymentInitiation> {
     return this.postModel(
       PaymentInitiation,
@@ -234,16 +202,11 @@ export class InvoiceService extends BaseService {
     );
   }
 
-  /**
-   * Public Server-Sent Events URL that streams the invoice's payment status.
-   * Open it from a browser (`new EventSource(url)`) to update an invoice page live.
-   */
   eventsUrl(id: string): string {
     return `${this.config.baseUrl}/invoice/${BaseService.id(id, 'invoice id')}/events`;
   }
 }
 
-/** Manage your customers. Requires the CUSTOMERS scope. */
 export class CustomerService extends BaseService {
   protected readonly resource = 'customers';
   protected override readonly scope = ApiScope.CUSTOMERS;
@@ -260,7 +223,6 @@ export class CustomerService extends BaseService {
     return this.listModels(Customer, 'customers', () => this.params('list', 'customerFilters', filters), options);
   }
 
-  /** Note: the API requires fullName on update too. */
   async update(id: string, params: CustomerParams, options?: RequestOptions): Promise<Customer> {
     return this.patchModel(
       Customer,
@@ -270,7 +232,6 @@ export class CustomerService extends BaseService {
     );
   }
 
-  /** Blocks the customer from paying. Returns { message }. */
   async blacklist(id: string, options?: RequestOptions): Promise<MullaObject> {
     return this.patchModel(MullaObject, `customers/${BaseService.id(id, 'customer id')}/blacklist`, {}, options);
   }
@@ -280,7 +241,6 @@ export class CustomerService extends BaseService {
   }
 }
 
-/** Configure where Mulla sends webhooks (one endpoint per merchant). */
 export class WebhookEndpointService extends BaseService {
   protected readonly resource = 'webhookEndpoint';
   /** Store the returned `endpoint.secret`: it is shown only once. */
@@ -303,26 +263,21 @@ export class WebhookEndpointService extends BaseService {
     );
   }
 
-  /** Issues a new signing secret. The old one stops working immediately. */
   async rotateSecret(options?: RequestOptions): Promise<WebhookEndpoint> {
     return this.postModel(WebhookEndpoint, 'webhooks/rotate-secret', {}, options);
   }
 
-  /** Sends a signed "webhook.test" event to your endpoint and reports what it answered. */
   async test(options?: RequestOptions): Promise<WebhookTestResult> {
     return this.postModel(WebhookTestResult, 'webhooks/test', {}, options);
   }
 }
 
-/** Read-only reference data: banks, bank branches, countries, currencies, API scopes. */
 export class ReferenceDataService extends BaseService {
   protected readonly resource = 'referenceData';
-  /** `country` is required. */
   banks(filters: BankFilters, options?: RequestOptions): CollectionPromise<MullaObject> {
     return this.listModels(MullaObject, 'banks', () => this.params('banks', 'bankFilters', filters), options);
   }
 
-  /** `code` or `swift` is required. */
   bankBranches(filters: BankBranchFilters, options?: RequestOptions): CollectionPromise<MullaObject> {
     return this.listModels(
       MullaObject,

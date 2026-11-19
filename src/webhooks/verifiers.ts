@@ -2,14 +2,10 @@ import { Buffer } from 'node:buffer';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { SignatureVerificationError } from '../errors.js';
 
-/** Raw request body, exactly as received. */
 export type RawBody = string | Uint8Array;
 
-/** Strategy for one webhook signature scheme. Headers have lower-cased names. */
 export interface SignatureVerifier {
-  /** Whether the request carries this scheme's headers. */
   supports(headers: Readonly<Record<string, string>>): boolean;
-  /** @throws SignatureVerificationError */
   verify(payload: RawBody, headers: Readonly<Record<string, string>>, secret: string): void;
 }
 
@@ -17,10 +13,6 @@ const MISMATCH =
   'Webhook signature does not match. Make sure you pass the raw request body ' +
   '(not re-encoded JSON) and the secret of your current webhook endpoint.';
 
-/**
- * Current Mulla scheme:
- *   x-webhook-signature: hex( HMAC-SHA512( rawBody, secret ) )
- */
 export class V1SignatureVerifier implements SignatureVerifier {
   static readonly HEADER = 'x-webhook-signature';
 
@@ -40,21 +32,10 @@ export class V1SignatureVerifier implements SignatureVerifier {
   }
 }
 
-/**
- * Timestamped scheme with replay protection:
- *   x-webhook-timestamp:    unix seconds
- *   x-webhook-signature-v2: hex( HMAC-SHA512( "{timestamp}.{rawBody}", secret ) )
- *
- * Rejects events older (or newer) than toleranceSeconds.
- */
 export class V2SignatureVerifier implements SignatureVerifier {
   static readonly SIGNATURE_HEADER = 'x-webhook-signature-v2';
   static readonly TIMESTAMP_HEADER = 'x-webhook-timestamp';
 
-  /**
-   * @param toleranceSeconds 0 disables the age check
-   * @param clock returns the current unix time in seconds (for tests)
-   */
   constructor(
     private readonly toleranceSeconds = 300,
     private readonly clock: () => number = () => Math.floor(Date.now() / 1000),
@@ -87,7 +68,6 @@ export class V2SignatureVerifier implements SignatureVerifier {
   }
 }
 
-/** Constant-time comparison of two hex strings. */
 function safeEqual(expected: string, given: string): boolean {
   const a = Buffer.from(expected, 'utf8');
   const b = Buffer.from(given, 'utf8');

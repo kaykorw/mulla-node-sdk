@@ -292,15 +292,6 @@ await mulla.charges.initiate(params, {
 });
 ```
 
-### Security notes
-
-- The base URL must use `https://`. Plain `http://` is accepted only for local development hosts
-  (`localhost`, `127.0.0.1`, `*.test`, `host.docker.internal`).
-- The secret key never appears in logs, error messages, `console.log` or `JSON.stringify` output.
-  Checkout tokens are masked (`token=***`) in logs and errors.
-- Redirects are never followed, so the key is never sent to another host.
-- Webhook signatures are compared in constant time. Always verify them before trusting an event.
-
 ## Testing your integration
 
 The SDK ships helpers so your tests never call the real API:
@@ -323,17 +314,3 @@ const { body, headers } = WebhookSigner.event(
   'my-webhook-secret',
 );
 ```
-
-## Development
-
-```bash
-npm install
-npm test              # unit tests (vitest)
-npm run lint          # eslint + prettier
-npm run typecheck
-npm run build         # dist/ (ESM + CommonJS + types)
-npm run check:package # publint + are-the-types-wrong
-npm run check         # all of the above
-```
-
-Integration tests run against the sandbox when a key is set: `MULLA_SECRET_KEY=sk_test_... npm run test:integration`.

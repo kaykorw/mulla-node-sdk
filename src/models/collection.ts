@@ -2,15 +2,6 @@ import { makeModels, type Model, type ModelClass } from './model.js';
 
 export type PageFetcher<T extends Model> = (page: number) => Promise<Collection<T>>;
 
-/**
- * A page of results from a list endpoint.
- *
- *  - `for await (const item of collection)` walks EVERY item across all pages (fetched lazily)
- *  - `collection.data`                      only the items of this page
- *  - `await collection.nextPage()`          the next page, or null
- *
- * Iterator pattern: pagination is hidden behind a plain `for await`.
- */
 export class Collection<T extends Model> implements AsyncIterable<T> {
   readonly #fetchPage: PageFetcher<T> | null;
 
@@ -25,10 +16,6 @@ export class Collection<T extends Model> implements AsyncIterable<T> {
     this.#fetchPage = fetchPage;
   }
 
-  /**
-   * Builds a collection from either the paginated shape
-   * {data, total, page, limit, total_pages} or a plain JSON array.
-   */
   static fromResponse<M extends Model>(
     Class: ModelClass<M>,
     response: unknown,
@@ -59,7 +46,6 @@ export class Collection<T extends Model> implements AsyncIterable<T> {
     return this.page < this.totalPages && this.#fetchPage !== null;
   }
 
-  /** The next page, or null on the last page. */
   async nextPage(): Promise<Collection<T> | null> {
     if (this.#fetchPage === null || this.page >= this.totalPages) {
       return null;
@@ -68,7 +54,6 @@ export class Collection<T extends Model> implements AsyncIterable<T> {
     return this.#fetchPage(this.page + 1);
   }
 
-  /** Items on this page only. */
   get length(): number {
     return this.data.length;
   }
@@ -108,7 +93,6 @@ export class CollectionPromise<T extends Model> implements PromiseLike<Collectio
   readonly #load: () => Promise<Collection<T>>;
   #promise: Promise<Collection<T>> | null = null;
 
-  /** The request starts on first use, so an unused list() call sends nothing. */
   constructor(load: () => Promise<Collection<T>>) {
     this.#load = load;
   }

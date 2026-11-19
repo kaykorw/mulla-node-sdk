@@ -18,24 +18,17 @@ export function environmentFromApiKey(apiKey: string): Environment {
   return match[1] as Environment;
 }
 
-/** Strategy: decides which API base URL a client talks to. */
 export interface EnvironmentResolver {
   resolveBaseUrl(environment: Environment, configuredBaseUrl: string | undefined): string;
 }
 
-/** API version appended when a base URL does not end with one (e.g. ".../gateway"). */
 export const API_VERSION = 'v1';
 
-/** Official gateway hosts per environment. */
 export const OFFICIAL_BASE_URLS: Readonly<Record<Environment, string | null>> = {
   live: 'https://core.mulla.app/gateway',
   test: 'https://mfs.kayko.dev/gateway',
 };
 
-/**
- * Precedence: the `baseUrl` option, then the MULLA_BASE_URL environment variable,
- * then the official host for the key's environment.
- */
 export class DefaultEnvironmentResolver implements EnvironmentResolver {
   constructor(private readonly baseUrls: Readonly<Record<Environment, string | null>> = OFFICIAL_BASE_URLS) {}
 
@@ -53,10 +46,6 @@ export class DefaultEnvironmentResolver implements EnvironmentResolver {
   }
 }
 
-/**
- * The secret key travels in every request, so the URL must use HTTPS.
- * Plain HTTP is allowed only for local development hosts.
- */
 export function assertSafeUrl(url: string): void {
   let parsed: URL;
   try {
@@ -93,10 +82,6 @@ function isLocalHost(host: string): boolean {
   );
 }
 
-/**
- * Accepts the gateway URL as shown in the dashboard ("https://host/gateway")
- * or with a version ("https://host/gateway/v1") and always returns the versioned form.
- */
 export function withVersion(url: string): string {
   const trimmed = url.replace(/\/+$/, '');
 

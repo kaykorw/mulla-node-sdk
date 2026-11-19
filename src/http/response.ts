@@ -1,7 +1,5 @@
-/** Immutable HTTP response returned by a transport. */
 export class Response {
   readonly statusCode: number;
-  /** Header name (lower-cased) => value. */
   readonly headers: Readonly<Record<string, string>>;
   readonly body: string;
   #decoded: Record<string, unknown> | unknown[] | null | undefined;
@@ -24,7 +22,6 @@ export class Response {
     return this.statusCode >= 200 && this.statusCode < 300;
   }
 
-  /** Decoded JSON body, or null when the body is empty or not a JSON object/array. */
   json(): Record<string, unknown> | unknown[] | null {
     if (this.#decoded === undefined) {
       let data: unknown = null;

@@ -15,34 +15,19 @@ import { PLATFORM } from './version.js';
 export type Language = 'en' | 'fr' | 'rw' | 'sw';
 
 export interface MullaOptions {
-  /**
-   * Gateway URL, e.g. "https://mfs.kayko.dev/gateway" ("/v1" is added if missing).
-   * Default: MULLA_BASE_URL, else core.mulla.app (live keys) / mfs.kayko.dev (test keys).
-   */
   baseUrl?: string;
   /** Total request timeout in milliseconds (default 30000). */
   timeout?: number;
-  /** Retries for network errors, 429 and 5xx (default 2). 0 disables. */
   maxRetries?: number;
-  /** Language for API messages. */
   lang?: Language;
-  /** UUIDv4 sent as x-device-id. Defaults to a stable id derived from the key. */
   deviceId?: string;
-  /** Your integration, appended to the User-Agent (e.g. "my-shop/1.2"). */
   appInfo?: string;
-  /** Custom fetch, e.g. one using a proxy. Ignored when `transport` is set. */
   fetch?: FetchFunction;
-  /** Custom HTTP adapter (default: FetchTransport). */
   transport?: Transport;
-  /** Custom retry policy (overrides maxRetries). */
   retryStrategy?: RetryStrategy;
-  /** console, pino, winston..., or fn(level, message, context). Keys and bodies are never logged. */
   logger?: Logger;
-  /** Extra middleware, run around each attempt. */
   middleware?: Middleware[];
-  /** Custom base URL resolution. */
   environmentResolver?: EnvironmentResolver;
-  /** How the SDK waits between retries and polls (tests can pass a no-op). */
   sleep?: Sleep;
 }
 
@@ -63,7 +48,6 @@ const ALLOWED_OPTIONS = [
 ];
 const LANGUAGES = ['en', 'fr', 'rw', 'sw'];
 
-/** Immutable client configuration, built from the options passed to MullaClient. */
 export class MullaConfig {
   readonly environment: Environment;
   readonly baseUrl: string;
@@ -149,9 +133,6 @@ export class MullaConfig {
     }
   }
 
-  /**
-   * @param apiKey your secret key; defaults to the MULLA_SECRET_KEY environment variable
-   */
   static create(apiKey?: string, options: MullaOptions = {}): MullaConfig {
     const key = apiKey ?? env('MULLA_SECRET_KEY');
     if (key === undefined || typeof key !== 'string' || key.trim() === '') {
@@ -163,12 +144,10 @@ export class MullaConfig {
     return new MullaConfig(key, options ?? {});
   }
 
-  /** @internal The secret key. Not a property, so it never shows up in logs or JSON. */
   apiKey(): string {
     return this.#apiKey;
   }
 
-  /** e.g. "sk_test_AbC123_****" */
   maskedApiKey(): string {
     return `sk_${this.environment}_${keyId(this.#apiKey)}_****`;
   }

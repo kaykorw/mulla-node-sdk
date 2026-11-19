@@ -5,20 +5,15 @@ import { INSPECT } from '../support/runtime.js';
 export interface RequestInit {
   method: string;
   url: string;
-  /** Header name => value. Names are lower-cased. */
   headers?: Record<string, string>;
   body?: string | null;
-  /** Total timeout in milliseconds. */
   timeout?: number;
-  /** Free-form data for middleware (e.g. the attempt number). */
   attributes?: Record<string, unknown>;
-  /** Cancels the request when aborted. */
   signal?: AbortSignal | undefined;
 }
 
 const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
 
-/** Immutable outgoing HTTP request passed through the middleware pipeline. */
 export class Request {
   readonly method: string;
   readonly url: string;
@@ -72,7 +67,6 @@ export class Request {
     return (this.attributes[name] as T | undefined) ?? fallback;
   }
 
-  /** Hides the API key and checkout tokens when the request is logged or serialised. */
   toJSON(): Record<string, unknown> {
     const headers: Record<string, string> = { ...this.headers };
     if (headers['x-api-key'] !== undefined) {

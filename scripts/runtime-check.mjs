@@ -22,7 +22,7 @@ function assert(condition, message) {
   }
 }
 
-// 1. Client + FakeTransport: a never-sent connection error is retried, so the testing entry's
+// A never-sent connection error is retried, so the testing entry's
 //    ConnectionError must be the same class the retry middleware checks.
 const fake = new FakeTransport()
   .pushConnectionError('refused', false)
@@ -36,7 +36,6 @@ const charge = await mulla.charges.initiate({ provider: 'MTN_RW', amount: 5000, 
 assert(charge.isSuccessful() && charge.amount === 5000, 'charge hydration');
 assert(fake.requests.length === 2, `retry across entries (sent ${fake.requests.length})`);
 
-// 2. Shared webhook conformance vector.
 const vector = JSON.parse(
   readFileSync(new URL('../tests/fixtures/webhooks/charge_success.json', import.meta.url), 'utf8'),
 );
@@ -47,7 +46,6 @@ assert(
   'event',
 );
 
-// 3. Fetch API handler.
 const handler = createWebhookHandler({ secret: 'whsec', onAny: () => {} });
 const { body, headers } = WebhookSigner.event('charge.success', { charge: 'chg_1' }, 'whsec');
 const ok = await handler(new Request('https://shop.test/hook', { method: 'POST', headers, body }));

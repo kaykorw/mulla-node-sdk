@@ -1,16 +1,6 @@
 import { enumValue, WebhookEventType } from '../enums.js';
 
-/**
- * A verified webhook event.
- *
- *     event.type          "charge.success"
- *     event.eventType     WebhookEventType.CHARGE_SUCCESS (null for unknown future events)
- *     event.id            unique event id: use it to ignore duplicate deliveries
- *     event.data          the raw payload data
- *     event.objectId()    id of the charge / payout / invoice concerned
- */
 export class Event {
-  /** The known event type, or null for an event added after this SDK version. */
   readonly eventType: WebhookEventType | null;
 
   constructor(
@@ -21,7 +11,6 @@ export class Event {
     this.eventType = enumValue(WebhookEventType, type);
   }
 
-  /** @param payload decoded { event, event_id, data } */
   static fromPayload(payload: Record<string, unknown>): Event {
     const data = payload.data;
 
@@ -52,7 +41,6 @@ export class Event {
     return this.type.startsWith('invoice.');
   }
 
-  /** Id of the charge, payout or invoice the event is about. */
   objectId(): string | null {
     for (const key of ['charge', 'payout', 'invoice']) {
       const value = this.data[key];
@@ -95,7 +83,6 @@ export class Event {
     return null;
   }
 
-  /** Your metadata from the original charge/payout, when the server includes it. */
   metadata(): Record<string, unknown> | null {
     const value = this.data.metadata;
 

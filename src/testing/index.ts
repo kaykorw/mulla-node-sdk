@@ -37,21 +37,10 @@ export class FakeTransport implements Transport {
     return this.push(new Response(status, lower, JSON.stringify(body)));
   }
 
-  /**
-   * Queue a Mulla-style error response.
-   *
-   * @param extra extra body fields, e.g. { retryAfter: 60 }
-   */
   pushError(status: number, errorCode: string, message = 'Error', extra: Record<string, unknown> = {}): this {
     return this.pushJson({ statusCode: status, message, errorCode, ...extra }, status);
   }
 
-  /**
-   * Queue a network failure.
-   *
-   * @param requestMayHaveBeenSent false = connection never made (safe to retry writes),
-   *                               true  = e.g. response timeout (Mulla may have processed it)
-   */
   pushConnectionError(message = 'Connection refused', requestMayHaveBeenSent = false): this {
     return this.push(new ConnectionError(message, { requestMayHaveBeenSent }));
   }
@@ -81,7 +70,6 @@ export class FakeTransport implements Transport {
     return next(request);
   }
 
-  /** Every request sent so far, oldest first. */
   get requests(): readonly Request[] {
     return [...this.#sent];
   }
@@ -90,7 +78,6 @@ export class FakeTransport implements Transport {
     return this.#sent.at(-1) ?? null;
   }
 
-  /** Decoded JSON body of the last request. */
   get lastBody(): unknown {
     const body = this.lastRequest?.body;
 
@@ -142,7 +129,6 @@ export const WebhookSigner = {
     return { body, headers: WebhookSigner.headers(body, secret, options.timestamp) };
   },
 
-  /** Signature headers for an arbitrary raw body (both v1 and v2 schemes). */
   headers(body: string, secret: string, timestamp: number = Math.floor(Date.now() / 1000)): Record<string, string> {
     return {
       'content-type': 'application/json',
@@ -152,7 +138,6 @@ export const WebhookSigner = {
     };
   },
 
-  /** Only the v1 header, exactly like today's Mulla server sends. */
   v1Headers(body: string, secret: string): Record<string, string> {
     return {
       'content-type': 'application/json',
