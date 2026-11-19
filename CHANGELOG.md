@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0](https://github.com/kaykorw/mulla-node-sdk/compare/v0.0.1...v0.1.0) (2026-11-19)
+
+
+### Features
+
+* Added TypeScript configuration files & add unit tests for request pipeline, security, services, transport, and webhook functionalities ([ec9d167](https://github.com/kaykorw/mulla-node-sdk/commit/ec9d16726fb368a2ee4a09f18d33915779985dd3))
+
 ## [0.0.1] - 2026-11-19
 
 ### Added
