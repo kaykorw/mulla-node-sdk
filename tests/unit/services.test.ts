@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { Charge, ChargeStatus, Collection, InvalidArgumentError, InvoiceStatus, Provider } from '@kayko/mulla-node';
+import {
+  Charge,
+  ChargeStatus,
+  Collection,
+  InvalidArgumentError,
+  InvoiceStatus,
+  normalizePhoneNumber,
+  Provider,
+} from '@kayko/mulla-node';
 import { BASE, charge, makeClient } from './helpers.js';
 
 describe('services', () => {
@@ -153,7 +161,7 @@ describe('services', () => {
     await client.checkout.pay('cs_1', 'tok', { provider: Provider.MTN_RW, phoneNumber: '250788000000' });
 
     expect(fake.lastRequest!.url).toBe(`${BASE}/checkout/cs_1/pay?token=tok`);
-    expect(fake.lastBody).toEqual({ provider: 'MTN_RW', phone_number: '250788000000' });
+    expect(fake.lastBody).toEqual({ provider: 'MTN_RW', phone_number: '+250788000000' });
     expect(client.checkout.eventsUrl('cs_1', 'a+b')).toBe(`${BASE}/checkout/cs_1/events?token=a%2Bb`);
   });
 
@@ -252,5 +260,27 @@ describe('services', () => {
     await expect(client.referenceData.bankBranches({})).rejects.toThrow(/code or a swift/);
     await expect(client.referenceData.banks({} as never)).rejects.toThrow(/country/);
     await expect(client.invoices.listPayments('..')).rejects.toBeInstanceOf(InvalidArgumentError);
+  });
+
+  it.each([
+    ['250788000000', '+250788000000'],
+    ['+250788000000', '+250788000000'],
+    ['0788000000', '+250788000000'],
+    ['788000000', '+250788000000'],
+    ['+250 788 000 000', '+250788000000'],
+    ['078-800-0000', '+250788000000'],
+    ['+256700000000', '+256700000000'],
+    ['12345', '12345'],
+  ])('normalizes the phone number %s to %s', (input, expected) => {
+    expect(normalizePhoneNumber(input)).toBe(expected);
+  });
+
+  it('sends phone numbers in the +250 format the API requires', async () => {
+    const { client, fake } = makeClient();
+    fake.pushJson(charge());
+
+    await client.charges.initiate({ provider: Provider.MTN_RW, amount: 100, phoneNumber: '0788000000' });
+
+    expect(fake.lastBody).toMatchObject({ phone_number: '+250788000000' });
   });
 });

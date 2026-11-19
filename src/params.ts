@@ -184,6 +184,24 @@ export type FieldMap = Readonly<Record<string, string | readonly [string, Transf
 
 const customerRef: Transform = (value) => (typeof value === 'string' ? { id: value } : value);
 
+export function normalizePhoneNumber(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('+')) {
+    return '+' + trimmed.slice(1).replace(/[\s().-]/g, '');
+  }
+  const digits = trimmed.replace(/[\s().-]/g, '');
+  if (/^2507\d{8}$/.test(digits)) return `+${digits}`;
+  if (/^07\d{8}$/.test(digits)) return `+25${digits}`;
+  if (/^7\d{8}$/.test(digits)) return `+250${digits}`;
+
+  return trimmed;
+}
+
+const phoneNumber = [
+  'phone_number',
+  (value: unknown) => (typeof value === 'string' ? normalizePhoneNumber(value) : value),
+] as const;
+
 const CHARGE_FIELDS: FieldMap = {
   amount: 'amount',
   currency: 'currency',
@@ -230,7 +248,7 @@ const DATES: FieldMap = { startDate: 'start_date', endDate: 'end_date' };
 
 export const SCHEMAS = {
   initiateCharge: {
-    fields: { ...CHARGE_FIELDS, provider: 'provider', phoneNumber: 'phone_number' },
+    fields: { ...CHARGE_FIELDS, provider: 'provider', phoneNumber },
     required: ['provider', 'amount', 'phoneNumber'],
   },
   createCheckout: {
@@ -241,7 +259,7 @@ export const SCHEMAS = {
     fields: {
       provider: 'provider',
       amount: 'amount',
-      phoneNumber: 'phone_number',
+      phoneNumber,
       reason: 'reason',
       metadata: 'metadata',
     },
@@ -251,7 +269,7 @@ export const SCHEMAS = {
     fields: {
       provider: 'provider',
       amount: 'amount',
-      phoneNumber: 'phone_number',
+      phoneNumber,
       reason: 'reason',
       metadata: 'metadata',
     },
@@ -272,9 +290,9 @@ export const SCHEMAS = {
   },
   createInvoice: { fields: INVOICE, required: ['customer', 'items'] },
   updateInvoice: { fields: INVOICE, required: [] },
-  pay: { fields: { provider: 'provider', phoneNumber: 'phone_number' }, required: ['provider', 'phoneNumber'] },
+  pay: { fields: { provider: 'provider', phoneNumber }, required: ['provider', 'phoneNumber'] },
   payInvoice: {
-    fields: { provider: 'provider', phoneNumber: 'phone_number', notes: 'notes' },
+    fields: { provider: 'provider', phoneNumber, notes: 'notes' },
     required: ['provider', 'phoneNumber'],
   },
   createWebhookEndpoint: { fields: { url: 'url', isActive: 'is_active' }, required: ['url'] },

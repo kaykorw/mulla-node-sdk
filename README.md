@@ -102,7 +102,7 @@ With CommonJS: `const { MullaClient, Provider } = require('@kayko/mulla-node');`
 const charge = await mulla.charges.initiate({
   provider: Provider.MTN_RW,
   amount: 5000, // RWF
-  phoneNumber: '250788000000',
+  phoneNumber: '+250788000000',
   reason: 'Order #1001',
 });
 
@@ -163,7 +163,7 @@ To use another server (for example a local one), set the `baseUrl` option or `MU
 ### Amounts, phone numbers and field names
 
 - **Amounts** are whole Rwandan francs (RWF), not cents. The minimum is 10.
-- **Phone numbers** use the international format without `+`, for example `250788000000`.
+- **Phone numbers** go to the API in international format with `+`, for example `+250788000000`. The SDK converts `250788000000`, `0788000000` and `0788 000 000` for you. `normalizePhoneNumber()` does the same conversion, for example to clean form input.
 - **Field names** are camelCase (`phoneNumber`, `successUrl`). A misspelled or unknown field throws an `InvalidArgumentError` before anything is sent.
 
 ### Key terms
@@ -193,7 +193,7 @@ Use this when your app already knows the customer's network and phone number.
 const charge = await mulla.charges.initiate({
   provider: Provider.AIRTEL_RW,
   amount: 12000,
-  phoneNumber: '250730000000',
+  phoneNumber: '+250730000000',
   reason: 'Order #1001', // shown to the customer
   metadata: { orderId: 1001 }, // your own data, kept with the charge
 });
@@ -380,7 +380,7 @@ A payout sends money from your Mulla balance to a mobile money wallet. You need 
 const payout = await mulla.payouts.initiate({
   provider: Provider.MTN_RW,
   amount: 15000,
-  phoneNumber: '250788000000',
+  phoneNumber: '+250788000000',
   reason: 'Refund for order #1001', // required
 });
 ```
@@ -397,7 +397,7 @@ A recharge moves money from a mobile money wallet into your Mulla balance, for e
 const recharge = await mulla.recharges.initiate({
   provider: Provider.MTN_RW,
   amount: 100000,
-  phoneNumber: '250788000000', // the wallet that pays
+  phoneNumber: '+250788000000', // the wallet that pays
 });
 
 const result = await mulla.recharges.waitForFinalStatus(recharge.id);
@@ -413,7 +413,7 @@ An invoice lets a customer pay a bill with one or more items. You need the `CUST
 const customer = await mulla.customers.create({
   fullName: 'Jane Doe',
   email: 'jane@example.com',
-  phone: '250788000000',
+  phone: '+250788000000',
 });
 
 const invoice = await mulla.invoices.create({
@@ -429,7 +429,7 @@ const invoice = await mulla.invoices.create({
 **2. Collect the payment.** This sends a payment prompt to the customer's phone:
 
 ```ts
-await mulla.invoices.pay(invoice.id, { provider: Provider.MTN_RW, phoneNumber: '250788000000' });
+await mulla.invoices.pay(invoice.id, { provider: Provider.MTN_RW, phoneNumber: '+250788000000' });
 ```
 
 **3. Track it.** You get an `invoice.paid` webhook once it's fully paid. To see every payment attempt, call `mulla.invoices.listPayments(invoice.id)`.
@@ -688,6 +688,7 @@ Methods return typed objects (`Charge`, `Payout`, `Invoice`…) with camelCase f
 | `PermissionError` with `API_KEY_SCOPE_DENIED`                | The key lacks the scope for that service. Add it in the dashboard.                                                             |
 | `PermissionError` with `API_KEY_ENVIRONMENT_MISMATCH`        | A test key is calling production, or the other way round. Remove `baseUrl` and let the key decide.                             |
 | `PermissionError` with `API_KEY_IP_DENIED`                   | Your server's IP isn't on the key's allowlist.                                                                                 |
+| `VALIDATION_FAILED` with "Invalid Phone Number"              | The number isn't a valid mobile number. Rwandan numbers are converted for you; other countries need the full `+` format.       |
 | `InvalidArgumentError` about an unknown field                | A misspelled or snake_case field, such as `phone_number`. Use camelCase: `phoneNumber`.                                        |
 | `InvalidArgumentError` about the base URL                    | `baseUrl` must use HTTPS, except for local hosts.                                                                              |
 | `InvalidArgumentError` about a missing API key               | `MULLA_SECRET_KEY` isn't set in this process. With Node.js 20+, you can load a `.env` file with `node --env-file=.env app.js`. |

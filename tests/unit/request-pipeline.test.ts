@@ -57,7 +57,7 @@ describe('request pipeline', () => {
 
     expect(fake.lastBody).toEqual({
       provider: 'AIRTEL_RW',
-      phone_number: '250733000000',
+      phone_number: '+250733000000',
       amount: 1000,
       billing_details: { firstName: 'Aline' },
       metadata: { orderId: 7 },
