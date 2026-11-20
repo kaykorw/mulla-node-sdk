@@ -1,5 +1,5 @@
 /*
- * Test helpers, published as "@kayko/mulla-node/testing".
+ * Test helpers, published as "@mulla/nodejs/testing".
  *
  * Imports go through the package name (not relative paths) so the classes here are the
  * very same ones the main entry uses: instanceof checks keep working in ESM and CommonJS.
@@ -13,7 +13,7 @@ import {
   type Request,
   type Transport,
   type WebhookEventType,
-} from '@kayko/mulla-node';
+} from '@mulla/nodejs';
 
 type Queued = Response | Error | ((request: Request) => Response | Promise<Response>);
 

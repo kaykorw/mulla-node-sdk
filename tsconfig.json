@@ -16,8 +16,8 @@
     "types": ["node"],
     "noEmit": true,
     "paths": {
-      "@kayko/mulla-node": ["./src/index.ts"],
-      "@kayko/mulla-node/testing": ["./src/testing/index.ts"]
+      "@mulla/nodejs": ["./src/index.ts"],
+      "@mulla/nodejs/testing": ["./src/testing/index.ts"]
     }
   },
   "include": ["src", "tests", "examples", "*.config.ts"]

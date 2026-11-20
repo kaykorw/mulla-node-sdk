@@ -7,14 +7,8 @@
  * Imports by package name, so it also checks the "exports" map (self-reference).
  */
 import { readFileSync } from 'node:fs';
-import {
-  createWebhookHandler,
-  MullaClient,
-  V1SignatureVerifier,
-  V2SignatureVerifier,
-  Webhook,
-} from '@kayko/mulla-node';
-import { FakeTransport, WebhookSigner } from '@kayko/mulla-node/testing';
+import { createWebhookHandler, MullaClient, V1SignatureVerifier, V2SignatureVerifier, Webhook } from '@mulla/nodejs';
+import { FakeTransport, WebhookSigner } from '@mulla/nodejs/testing';
 
 function assert(condition, message) {
   if (!condition) {

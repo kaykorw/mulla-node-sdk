@@ -1,5 +1,5 @@
-import { MullaClient, type MullaOptions } from '@kayko/mulla-node';
-import { FakeTransport } from '@kayko/mulla-node/testing';
+import { MullaClient, type MullaOptions } from '@mulla/nodejs';
+import { FakeTransport } from '@mulla/nodejs/testing';
 
 export const KEY = 'sk_test_AbC123_s3cr3tRandomPart';
 export const BASE = 'https://mulla.test/gateway/v1';

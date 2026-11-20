@@ -7,8 +7,8 @@ import {
   createWebhookProcessor,
   type Event,
   type WebhookHandlerOptions,
-} from '@kayko/mulla-node';
-import { WebhookSigner } from '@kayko/mulla-node/testing';
+} from '@mulla/nodejs';
+import { WebhookSigner } from '@mulla/nodejs/testing';
 
 const SECRET = 'whsec_test';
 const signed = () =>

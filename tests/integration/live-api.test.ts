@@ -5,7 +5,7 @@
  *   MULLA_SECRET_KEY=sk_test_... MULLA_BASE_URL=http://localhost:5605/gateway npm run test:integration   (local stack)
  */
 import { beforeAll, describe, expect, it } from 'vitest';
-import { MullaClient, NotFoundError } from '@kayko/mulla-node';
+import { MullaClient, NotFoundError } from '@mulla/nodejs';
 
 const key = process.env.MULLA_SECRET_KEY;
 

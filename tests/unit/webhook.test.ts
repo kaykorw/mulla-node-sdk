@@ -8,8 +8,8 @@ import {
   V2SignatureVerifier,
   Webhook,
   WebhookEventType,
-} from '@kayko/mulla-node';
-import { WebhookSigner } from '@kayko/mulla-node/testing';
+} from '@mulla/nodejs';
+import { WebhookSigner } from '@mulla/nodejs/testing';
 
 interface Vector {
   secret: string;

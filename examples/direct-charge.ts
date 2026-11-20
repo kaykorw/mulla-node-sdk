@@ -3,7 +3,7 @@
  *
  *   MULLA_SECRET_KEY=sk_test_... npx tsx examples/direct-charge.ts 250788000000
  */
-import { ConnectionError, MullaClient, Provider, uuidV4 } from '@kayko/mulla-node';
+import { ConnectionError, MullaClient, Provider, uuidV4 } from '@mulla/nodejs';
 
 const mulla = new MullaClient(); // reads MULLA_SECRET_KEY
 

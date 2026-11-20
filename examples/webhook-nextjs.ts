@@ -2,7 +2,7 @@
  * Webhook endpoint for the Next.js App Router. Save as app/api/mulla/webhook/route.ts.
  * The same handler works in Remix, SvelteKit, Hono, Bun.serve, Deno.serve and Cloudflare Workers.
  */
-import { createWebhookHandler } from '@kayko/mulla-node';
+import { createWebhookHandler } from '@mulla/nodejs';
 
 export const POST = createWebhookHandler({
   secret: process.env.MULLA_WEBHOOK_SECRET!,

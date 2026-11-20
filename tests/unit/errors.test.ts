@@ -12,7 +12,7 @@ import {
   PermissionError,
   RateLimitError,
   Response,
-} from '@kayko/mulla-node';
+} from '@mulla/nodejs';
 import { caught, makeClient } from './helpers.js';
 
 describe('errorFromResponse', () => {

@@ -114,6 +114,7 @@ export type {
   UpdateWebhookEndpointParams,
   WaitOptions,
 } from './params.js';
+export { normalizePhoneNumber } from './params.js';
 
 export {
   BaseService,

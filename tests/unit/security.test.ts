@@ -1,7 +1,7 @@
 import { inspect } from 'node:util';
 import { describe, expect, it } from 'vitest';
-import { ApiError, ApiServerError, ConnectionError, InvalidArgumentError, MullaClient } from '@kayko/mulla-node';
-import { FakeTransport } from '@kayko/mulla-node/testing';
+import { ApiError, ApiServerError, ConnectionError, InvalidArgumentError, MullaClient } from '@mulla/nodejs';
+import { FakeTransport } from '@mulla/nodejs/testing';
 import { BASE, caught, charge, CHARGE, KEY, makeClient } from './helpers.js';
 
 describe('retries never duplicate a write', () => {
