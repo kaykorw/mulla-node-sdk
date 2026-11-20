@@ -701,7 +701,7 @@ Methods return typed objects (`Charge`, `Payout`, `Invoice`…) with camelCase f
 
 | Package version | Mulla API | Tested in CI on                   |
 | --------------- | --------- | --------------------------------- |
-| 0.0.1           | v1        | Node.js 20, 22 and 24; Bun latest |
+| 0.1.0           | v1        | Node.js 20, 22 and 24; Bun latest |
 
 <!-- x-release-please-end -->
 
