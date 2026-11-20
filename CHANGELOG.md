@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/kaykorw/mulla-node-sdk/compare/v0.1.1...v0.1.2) (2026-11-20)
+
+
+### Bug Fixes
+
+* update npm installation step for trusted publishing ([fb7d634](https://github.com/kaykorw/mulla-node-sdk/commit/fb7d63472fd16ce0a3859ebe4857b3318b359955))
+* update npm installation step for trusted publishing ([a9a2ab9](https://github.com/kaykorw/mulla-node-sdk/commit/a9a2ab9538a0a3b89cdf314fb464e34c1345365e))
+
 ## [0.1.1](https://github.com/kaykorw/mulla-node-sdk/compare/v0.1.0...v0.1.1) (2026-11-20)
 
 
