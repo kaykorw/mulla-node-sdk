@@ -5,7 +5,7 @@
  */
 // @ts-expect-error express is not a dependency of the SDK; install it in your app.
 import express from 'express';
-import { createNodeWebhookHandler, WebhookEventType } from '@kayko/mulla-node';
+import { createNodeWebhookHandler, WebhookEventType } from '@mulla/nodejs';
 
 const app = express();
 

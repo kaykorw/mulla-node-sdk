@@ -3,7 +3,7 @@
  *
  *   MULLA_SECRET_KEY=sk_test_... npx tsx examples/payout.ts 250788000000
  */
-import { InvalidRequestError, MullaClient } from '@kayko/mulla-node';
+import { InvalidRequestError, MullaClient } from '@mulla/nodejs';
 
 const mulla = new MullaClient();
 

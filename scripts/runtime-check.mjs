@@ -7,20 +7,14 @@
  * Imports by package name, so it also checks the "exports" map (self-reference).
  */
 import { readFileSync } from 'node:fs';
-import {
-  createWebhookHandler,
-  MullaClient,
-  V1SignatureVerifier,
-  V2SignatureVerifier,
-  Webhook,
-} from '@kayko/mulla-node';
-import { FakeTransport, WebhookSigner } from '@kayko/mulla-node/testing';
+import { createWebhookHandler, MullaClient, V1SignatureVerifier, V2SignatureVerifier, Webhook } from '@mulla/node';
+import { FakeTransport, WebhookSigner } from '@mulla/node/testing';
 
 function assert(condition, message) {
   if (!condition) {
     throw new Error(`runtime-check failed: ${message}`);
-  }
-}
+  }@mulla/nodejs
+}@mulla/nodejs
 
 // A never-sent connection error is retried, so the testing entry's
 //    ConnectionError must be the same class the retry middleware checks.

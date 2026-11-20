@@ -3,7 +3,7 @@
  *
  *   MULLA_SECRET_KEY=sk_test_... npx tsx examples/hosted-checkout.ts
  */
-import { MullaClient } from '@kayko/mulla-node';
+import { MullaClient } from '@mulla/nodejs';
 
 const mulla = new MullaClient();
 

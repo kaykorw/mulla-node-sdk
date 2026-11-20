@@ -40,19 +40,19 @@ try {
   `;
   writeFileSync(
     join(dir, 'esm.mjs'),
-    `import { MullaClient, Charge, VERSION } from '@kayko/mulla-node';\nimport { FakeTransport } from '@kayko/mulla-node/testing';\n${check}`,
+    `import { MullaClient, Charge, VERSION } from '@mulla/nodejs';\nimport { FakeTransport } from '@mulla/nodejs/testing';\n${check}`,
   );
   writeFileSync(
     join(dir, 'cjs.cjs'),
-    `const { MullaClient, Charge, VERSION } = require('@kayko/mulla-node');\nconst { FakeTransport } = require('@kayko/mulla-node/testing');\n(async () => {${check}})().catch((e) => { console.error(e); process.exit(1); });`,
+    `const { MullaClient, Charge, VERSION } = require('@mulla/nodejs');\nconst { FakeTransport } = require('@mulla/nodejs/testing');\n(async () => {${check}})().catch((e) => { console.error(e); process.exit(1); });`,
   );
   const esm = run(process.execPath, ['esm.mjs'], dir).trim();
   const cjs = run(process.execPath, ['cjs.cjs'], dir).trim();
 
   // Types: a TS consumer with node16 resolution, both module formats.
   const ts = `
-    import { MullaClient, Provider, type Charge } from '@kayko/mulla-node';
-    import { FakeTransport } from '@kayko/mulla-node/testing';
+    import { MullaClient, Provider, type Charge } from '@mulla/nodejs';
+    import { FakeTransport } from '@mulla/nodejs/testing';
     const mulla = new MullaClient('sk_test_x_y', { transport: new FakeTransport() });
     export const p: Promise<Charge> = mulla.charges.initiate({ provider: Provider.MTN_RW, amount: 1, phoneNumber: '1' });
   `;

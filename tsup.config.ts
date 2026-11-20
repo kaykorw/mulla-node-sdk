@@ -7,7 +7,7 @@ export default defineConfig({
   target: 'node20',
   platform: 'neutral',
   // The testing entry imports the main entry by package name, so both share one copy of every class.
-  external: ['@kayko/mulla-node', /^node:/],
+  external: ['@mulla/nodejs', /^node:/],
   sourcemap: true,
   clean: true,
   treeshake: true,

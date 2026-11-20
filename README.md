@@ -2,7 +2,7 @@
 
 <!-- x-release-please-start-version -->
 
-> This guide applies to `@kayko/mulla-node` **0.0.1** and the Mulla API **v1**. See [Versioning and compatibility](#versioning-and-compatibility).
+> This guide applies to `@mulla/nodejs` **0.0.1** and the Mulla API **v1**. See [Versioning and compatibility](#versioning-and-compatibility).
 
 <!-- x-release-please-end -->
 
@@ -71,10 +71,10 @@ Why use it instead of calling the API yourself:
 ## Installation
 
 ```bash
-npm install @kayko/mulla-node
+npm install @mulla/nodejs
 ```
 
-With other package managers: `pnpm add @kayko/mulla-node`, `yarn add @kayko/mulla-node` or `bun add @kayko/mulla-node`.
+With other package managers: `pnpm add @mulla/nodejs`, `yarn add @mulla/nodejs` or `bun add @mulla/nodejs`.
 
 ## Quick start
 
@@ -89,12 +89,12 @@ MULLA_SECRET_KEY=sk_test_...
 **2. Create a client.** It reads `MULLA_SECRET_KEY` automatically:
 
 ```ts
-import { MullaClient, Provider } from '@kayko/mulla-node';
+import { MullaClient, Provider } from '@mulla/nodejs';
 
 const mulla = new MullaClient();
 ```
 
-With CommonJS: `const { MullaClient, Provider } = require('@kayko/mulla-node');`
+With CommonJS: `const { MullaClient, Provider } = require('@mulla/nodejs');`
 
 **3. Ask a customer to pay.** Mulla sends a payment prompt to their phone:
 
@@ -180,7 +180,7 @@ To use another server (for example a local one), set the `baseUrl` option or `MU
 Each guide is a short, complete task. They all start from a client:
 
 ```ts
-import { MullaClient, Provider } from '@kayko/mulla-node';
+import { MullaClient, Provider } from '@mulla/nodejs';
 
 const mulla = new MullaClient(); // reads MULLA_SECRET_KEY
 ```
@@ -287,7 +287,7 @@ Each handler checks the signature, then replies:
 
 ```ts
 // app/api/mulla/webhook/route.ts (Next.js App Router)
-import { createWebhookHandler } from '@kayko/mulla-node';
+import { createWebhookHandler } from '@mulla/nodejs';
 
 export const POST = createWebhookHandler(options);
 ```
@@ -307,7 +307,7 @@ Give the webhook route `express.raw()`, and register it before `express.json()`:
 
 ```ts
 import express from 'express';
-import { createNodeWebhookHandler } from '@kayko/mulla-node';
+import { createNodeWebhookHandler } from '@mulla/nodejs';
 
 app.post('/mulla/webhook', express.raw({ type: 'application/json' }), createNodeWebhookHandler(options));
 app.use(express.json()); // for your other routes
@@ -338,7 +338,7 @@ export class MullaWebhookController {
 `createWebhookProcessor` does the work without touching a request or response object. Pass it the raw body and headers, then send back what it returns:
 
 ```ts
-import { createWebhookProcessor } from '@kayko/mulla-node';
+import { createWebhookProcessor } from '@mulla/nodejs';
 
 const processWebhook = createWebhookProcessor(options);
 
@@ -352,7 +352,7 @@ fastify.post('/mulla/webhook', async (req, reply) => {
 #### Verify by hand
 
 ```ts
-import { Webhook, SignatureVerificationError } from '@kayko/mulla-node';
+import { Webhook, SignatureVerificationError } from '@mulla/nodejs';
 
 try {
   const event = Webhook.constructEvent(rawBody, req.headers, process.env.MULLA_WEBHOOK_SECRET!);
@@ -441,7 +441,7 @@ To cancel an invoice: `await mulla.invoices.updateStatus(invoice.id, 'CANCELLED'
 Every `list()` method takes filters. `await` returns **one page**. A `for await` loop goes through **every page**:
 
 ```ts
-import { ChargeStatus } from '@kayko/mulla-node';
+import { ChargeStatus } from '@mulla/nodejs';
 
 // Every successful charge since 1 November; pages are fetched as the loop needs them
 for await (const charge of mulla.charges.list({ status: ChargeStatus.SUCCESSFUL, startDate: '2026-11-01' })) {
@@ -463,7 +463,7 @@ Common filters are `page`, `limit`, `status`, `keyword`, `startDate`, `endDate`,
 Every error the SDK throws extends `MullaError`, so you can catch them all at once or one type at a time:
 
 ```ts
-import { InvalidRequestError, MullaError, PermissionError } from '@kayko/mulla-node';
+import { InvalidRequestError, MullaError, PermissionError } from '@mulla/nodejs';
 
 try {
   await mulla.payouts.initiate(params);
@@ -494,7 +494,7 @@ The SDK protects you in two ways:
 For the strongest protection, create the key once, save it with your order, and reuse it on every attempt:
 
 ```ts
-import { ConnectionError, IdempotencyError, uuidV4 } from '@kayko/mulla-node';
+import { ConnectionError, IdempotencyError, uuidV4 } from '@mulla/nodejs';
 
 order.mullaKey ??= uuidV4(); // or crypto.randomUUID(); save it with the order
 
@@ -513,13 +513,13 @@ try {
 
 ### Test your integration
 
-The SDK includes helpers so your own tests never call Mulla. Import them from `@kayko/mulla-node/testing`.
+The SDK includes helpers so your own tests never call Mulla. Import them from `@mulla/nodejs/testing`.
 
 **Fake API responses** with `FakeTransport`:
 
 ```ts
-import { MullaClient } from '@kayko/mulla-node';
-import { FakeTransport } from '@kayko/mulla-node/testing';
+import { MullaClient } from '@mulla/nodejs';
+import { FakeTransport } from '@mulla/nodejs/testing';
 
 const fake = new FakeTransport().pushJson({ id: 'chg_1', status: 'PENDING', amount: 5000 });
 const mulla = new MullaClient('sk_test_abc_xyz', { transport: fake });
@@ -535,7 +535,7 @@ To test failures, queue `pushError(400, 'INSUFFICIENT_BALANCE')` or `pushConnect
 **Sign test webhooks** with `WebhookSigner`:
 
 ```ts
-import { WebhookSigner } from '@kayko/mulla-node/testing';
+import { WebhookSigner } from '@mulla/nodejs/testing';
 
 const { body, headers } = WebhookSigner.event(
   'charge.success',

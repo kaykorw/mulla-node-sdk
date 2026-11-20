@@ -7,7 +7,7 @@ import {
   InvoiceStatus,
   normalizePhoneNumber,
   Provider,
-} from '@kayko/mulla-node';
+} from '@mulla/nodejs';
 import { BASE, charge, makeClient } from './helpers.js';
 
 describe('services', () => {

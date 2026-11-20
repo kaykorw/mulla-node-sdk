@@ -7,7 +7,7 @@ import {
   isUuidV4,
   MullaClient,
   uuidFromSeed,
-} from '@kayko/mulla-node';
+} from '@mulla/nodejs';
 import { BASE, KEY, makeClient } from './helpers.js';
 
 const LIVE_KEY = 'sk_live_AbC123_s3cr3tRandomPart';

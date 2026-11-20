@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ConnectionError, FetchTransport, MullaClient, NotFoundError, Request } from '@kayko/mulla-node';
+import { ConnectionError, FetchTransport, MullaClient, NotFoundError, Request } from '@mulla/nodejs';
 import { caught, charge, KEY } from './helpers.js';
 
 let server: Server | null = null;

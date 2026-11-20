@@ -8,7 +8,7 @@ import {
   Provider,
   RateLimitError,
   type Middleware,
-} from '@kayko/mulla-node';
+} from '@mulla/nodejs';
 import { BASE, caught, charge, CHARGE, KEY, makeClient } from './helpers.js';
 
 describe('request pipeline', () => {
