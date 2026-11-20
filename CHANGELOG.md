@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/kaykorw/mulla-node-sdk/compare/v0.1.0...v0.1.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* update import paths to use new package name '@mulla/nodejs' ([3e22578](https://github.com/kaykorw/mulla-node-sdk/commit/3e2257826d42c79ea86a724d6db8b35f0740c12a))
+
 ## [0.1.0](https://github.com/kaykorw/mulla-node-sdk/compare/v0.0.1...v0.1.0) (2026-11-19)
 
 
