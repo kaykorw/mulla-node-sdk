@@ -42,8 +42,7 @@ export class FetchTransport implements Transport {
         requestMayHaveBeenSent: false,
       });
     }
-    // Call through a wrapper so a fetch that depends on its receiver (e.g. window.fetch) is never
-    // invoked as a method of this transport ("Illegal invocation").
+    // Unbound call: some fetch implementations throw "Illegal invocation" when called as a method.
     this.#fetch = (input, init) => resolved(input, init);
   }
 

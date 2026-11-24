@@ -15,7 +15,6 @@ const session = await mulla.charges.createCheckout({
   cancelUrl: 'https://shop.example/cart',
 });
 
-// Redirect the customer here (e.g. res.redirect(session.checkoutUrl) in Express).
 console.log(session.checkoutUrl);
 
 // Return URLs are not signed: confirm the payment with the webhook, or:

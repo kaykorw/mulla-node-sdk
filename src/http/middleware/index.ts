@@ -167,7 +167,6 @@ export class LoggingMiddleware implements MiddlewareHandler {
         : (level, message, context) => {
             logger[level](message, context);
           };
-    // Logging is best effort: a failing logger must never break (or retry) a payment request.
     this.#log = (level, message, context) => {
       try {
         log(level, message, context);

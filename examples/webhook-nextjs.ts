@@ -8,7 +8,6 @@ export const POST = createWebhookHandler({
   secret: process.env.MULLA_WEBHOOK_SECRET!,
   on: {
     'charge.success': async (event) => {
-      // Mark the order paid. event.metadata() has your charge metadata when the server includes it.
       console.log('Paid:', event.objectId(), event.reference());
     },
     'payout.failed': async (event) => {

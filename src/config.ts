@@ -150,7 +150,6 @@ export class MullaConfig {
 
     this.appInfo = options.app_info === undefined ? null : formatAppInfo(options.app_info);
 
-    // Transport (Adapter): either a custom fetch or a full transport, never both.
     if (options.transport !== undefined && options.fetch !== undefined) {
       throw new InvalidArgumentError(
         'Pass either "fetch" or "transport", not both: a custom transport does not use fetch.',
@@ -162,7 +161,6 @@ export class MullaConfig {
     this.transport = options.transport ?? new FetchTransport(options.fetch);
     assertMethods(this.transport, ['send'], 'transport');
 
-    // Retries (Strategy): max_retries configures the default; a custom strategy owns its own limits.
     if (options.retry_strategy !== undefined && options.max_retries !== undefined) {
       throw new InvalidArgumentError(
         'Pass either "max_retries" or "retry_strategy", not both: set the limit on your strategy instead.',

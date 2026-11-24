@@ -32,7 +32,6 @@ export class MullaClient {
    *   The SDK never reads environment variables: pass every value explicitly.
    */
   constructor(options: MullaOptions | string) {
-    // Guard against the old (key, options) call shape, whose options would otherwise be ignored.
     if (arguments.length > 1) {
       throw new InvalidArgumentError(
         'MullaClient takes a single options object: new MullaClient({ api_key, base_url, ... }).',

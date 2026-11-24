@@ -24,8 +24,6 @@ app.post(
         console.log('Failed:', event.objectId());
       },
     },
-    // Mulla retries deliveries: skip events you already processed.
-    // isDuplicate: async (event) => db.webhookEvents.exists(event.id),
   }),
 );
 

@@ -49,7 +49,6 @@ try {
   const esm = run(process.execPath, ['esm.mjs'], dir).trim();
   const cjs = run(process.execPath, ['cjs.cjs'], dir).trim();
 
-  // Types: a TS consumer with node16 resolution, both module formats.
   const ts = `
     import { MullaClient, Provider, type Charge } from '@mulla/nodejs';
     import { FakeTransport } from '@mulla/nodejs/testing';
