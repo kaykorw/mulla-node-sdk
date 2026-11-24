@@ -21,8 +21,9 @@ function assert(condition, message) {
 const fake = new FakeTransport()
   .pushConnectionError('refused', false)
   .pushJson({ id: 'chg_1', status: 'SUCCESSFUL', amount: '5000' });
-const mulla = new MullaClient('sk_test_AbC123_secret', {
-  baseUrl: 'https://mulla.test/gateway',
+const mulla = new MullaClient({
+  api_key: 'sk_test_AbC123_secret',
+  base_url: 'https://mulla.test/gateway',
   transport: fake,
   sleep: async () => {},
 });

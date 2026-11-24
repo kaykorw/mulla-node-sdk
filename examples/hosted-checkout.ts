@@ -1,11 +1,11 @@
 /**
  * Hosted checkout: Mulla's page collects the network and phone number.
  *
- *   MULLA_SECRET_KEY=sk_test_... npx tsx examples/hosted-checkout.ts
+ *   npx tsx --env-file=.env examples/hosted-checkout.ts
  */
 import { MullaClient } from '@mulla/nodejs';
 
-const mulla = new MullaClient();
+const mulla = new MullaClient({ api_key: process.env.MULLA_SECRET_KEY });
 
 const session = await mulla.charges.createCheckout({
   amount: 25_000,

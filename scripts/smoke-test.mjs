@@ -32,7 +32,7 @@ try {
 
   const check = `
     const fake = new FakeTransport().pushConnectionError('refused', false).pushJson({ id: 'chg_1', status: 'PENDING' });
-    const mulla = new MullaClient('sk_test_AbC123_secret', { transport: fake, sleep: async () => {} });
+    const mulla = new MullaClient({ api_key: 'sk_test_AbC123_secret', transport: fake, sleep: async () => {} });
     const charge = await mulla.charges.retrieve('chg_1');
     if (charge.id !== 'chg_1' || fake.requests.length !== 2) throw new Error('shared classes broken');
     if (!(charge instanceof Charge)) throw new Error('model class mismatch');
@@ -53,7 +53,7 @@ try {
   const ts = `
     import { MullaClient, Provider, type Charge } from '@mulla/nodejs';
     import { FakeTransport } from '@mulla/nodejs/testing';
-    const mulla = new MullaClient('sk_test_x_y', { transport: new FakeTransport() });
+    const mulla = new MullaClient({ api_key: 'sk_test_x_y', transport: new FakeTransport() });
     export const p: Promise<Charge> = mulla.charges.initiate({ provider: Provider.MTN_RW, amount: 1, phoneNumber: '1' });
   `;
   writeFileSync(join(dir, 'esm.mts'), ts);

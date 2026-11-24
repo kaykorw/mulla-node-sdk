@@ -14,7 +14,7 @@ describe.skipIf(key === undefined || key === '')('live API', () => {
 
   // Created here, not in the describe body: vitest runs that body even when the suite is skipped.
   beforeAll(() => {
-    mulla = new MullaClient(key, { maxRetries: 1 });
+    mulla = new MullaClient({ api_key: key, base_url: process.env.MULLA_BASE_URL, max_retries: 1 });
   });
 
   it('lists charges', async () => {

@@ -58,7 +58,7 @@ describe('FetchTransport', () => {
       }
       res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(charge()));
     });
-    const mulla = new MullaClient(KEY, { baseUrl: base, sleep: async () => {} });
+    const mulla = new MullaClient({ api_key: KEY, base_url: base, sleep: async () => {} });
 
     expect((await mulla.charges.retrieve('abc')).reference).toBe('CHG20261116ABCD');
     expect(calls).toBe(2);
@@ -69,7 +69,7 @@ describe('FetchTransport', () => {
     const base = await listen(() => {
       // never answers
     });
-    const mulla = new MullaClient(KEY, { baseUrl: base, timeout: 100, maxRetries: 0 });
+    const mulla = new MullaClient({ api_key: KEY, base_url: base, timeout: 100, max_retries: 0 });
 
     const error = (await caught(() =>
       mulla.charges.initiate({ provider: 'MTN_RW', amount: 100, phoneNumber: '2507' }),
@@ -85,7 +85,7 @@ describe('FetchTransport', () => {
     const base = await listen(() => {});
     await new Promise<void>((resolve) => server!.close(() => resolve()));
     server = null;
-    const mulla = new MullaClient(KEY, { baseUrl: base, maxRetries: 0 });
+    const mulla = new MullaClient({ api_key: KEY, base_url: base, max_retries: 0 });
 
     const error = (await caught(() => mulla.charges.retrieve('abc'))) as ConnectionError;
 

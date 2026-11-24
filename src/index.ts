@@ -1,5 +1,5 @@
 export { MullaClient } from './client.js';
-export { MullaConfig, type Language, type MullaOptions } from './config.js';
+export { MullaConfig, type AppInfo, type MullaOptions } from './config.js';
 export { VERSION } from './version.js';
 
 export {
@@ -7,6 +7,7 @@ export {
   ChargeStatus,
   Currency,
   InvoiceStatus,
+  Language,
   PaymentStatus,
   PayoutStatus,
   Provider,
@@ -40,7 +41,7 @@ export {
   environmentFromApiKey,
   OFFICIAL_BASE_URLS,
   withVersion,
-  type Environment,
+  Environment,
   type EnvironmentResolver,
 } from './environment.js';
 

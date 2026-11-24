@@ -244,8 +244,9 @@ export class CustomerService extends BaseService {
 export class WebhookEndpointService extends BaseService {
   protected readonly resource = 'webhookEndpoint';
   /** Store the returned `endpoint.secret`: it is shown only once. */
-  async create(params: CreateWebhookEndpointParams, options?: RequestOptions): Promise<WebhookEndpoint> {
-    const body = this.params('create', 'createWebhookEndpoint', params);
+  async create(params: CreateWebhookEndpointParams = {}, options?: RequestOptions): Promise<WebhookEndpoint> {
+    const url = params.url ?? this.config.webhookUrl ?? undefined;
+    const body = this.params('create', 'createWebhookEndpoint', url === undefined ? params : { ...params, url });
 
     return this.postModel(WebhookEndpoint, 'webhooks', { is_active: true, ...body }, options);
   }

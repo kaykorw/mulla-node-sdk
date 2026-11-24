@@ -1,11 +1,14 @@
 import { InvalidArgumentError } from './errors.js';
-import { env } from './support/runtime.js';
 
 /**
  * Mulla runs sandbox (test) and production (live) as separate servers.
  * The environment is encoded in the secret key prefix: sk_test_... / sk_live_...
  */
-export type Environment = 'live' | 'test';
+export const Environment = {
+  TEST: 'test',
+  PRODUCTION: 'live',
+} as const;
+export type Environment = (typeof Environment)[keyof typeof Environment];
 
 export function environmentFromApiKey(apiKey: string): Environment {
   const match = /^sk_(live|test)_[A-Za-z0-9]+_/.exec(apiKey);
@@ -33,10 +36,10 @@ export class DefaultEnvironmentResolver implements EnvironmentResolver {
   constructor(private readonly baseUrls: Readonly<Record<Environment, string | null>> = OFFICIAL_BASE_URLS) {}
 
   resolveBaseUrl(environment: Environment, configuredBaseUrl: string | undefined): string {
-    const url = configuredBaseUrl ?? env('MULLA_BASE_URL') ?? this.baseUrls[environment] ?? null;
+    const url = configuredBaseUrl ?? this.baseUrls[environment] ?? null;
     if (url === null) {
       throw new InvalidArgumentError(
-        `No Mulla API URL is configured for the ${environment} environment. Pass the "baseUrl" option`,
+        `No Mulla API URL is configured for the ${environment} environment. Pass the "base_url" option.`,
       );
     }
 

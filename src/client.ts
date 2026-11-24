@@ -12,13 +12,14 @@ import {
   WebhookEndpointService,
   type BaseService,
 } from './services/index.js';
+import { InvalidArgumentError } from './errors.js';
 import { INSPECT } from './support/runtime.js';
 import { Webhook, type WebhookOptions } from './webhooks/webhook.js';
 
 /**
  * Entry point to the Mulla API (Facade over all services).
  *
- *     const mulla = new MullaClient('sk_test_...');   // or set MULLA_SECRET_KEY
+ *     const mulla = new MullaClient({ api_key: process.env.MULLA_SECRET_KEY });
  *     const charge = await mulla.charges.initiate({ provider: 'MTN_RW', amount: 5000, phoneNumber: '250788000000' });
  */
 export class MullaClient {
@@ -26,8 +27,18 @@ export class MullaClient {
   readonly #requestor: ApiRequestor;
   readonly #services = new Map<string, BaseService>();
 
-  constructor(apiKey?: string, options: MullaOptions = {}) {
-    this.#config = MullaConfig.create(apiKey, options);
+  /**
+   * @param options Client options, or just the secret key as a shorthand.
+   *   The SDK never reads environment variables: pass every value explicitly.
+   */
+  constructor(options: MullaOptions | string) {
+    // Guard against the old (key, options) call shape, whose options would otherwise be ignored.
+    if (arguments.length > 1) {
+      throw new InvalidArgumentError(
+        'MullaClient takes a single options object: new MullaClient({ api_key, base_url, ... }).',
+      );
+    }
+    this.#config = MullaConfig.create(options);
     this.#requestor = new ApiRequestor(this.#config);
   }
 
@@ -79,8 +90,16 @@ export class MullaClient {
     return this.#config;
   }
 
-  webhooks(secret: string, options: WebhookOptions = {}): Webhook {
-    return new Webhook(secret, options);
+  /** Webhook verifier using `secret`, or the client's `webhook_secret` option when omitted. */
+  webhooks(secret?: string, options: WebhookOptions = {}): Webhook {
+    const resolved = secret ?? this.#config.webhookSecret();
+    if (resolved === null) {
+      throw new InvalidArgumentError(
+        'No webhook secret. Pass "webhook_secret" to new MullaClient({...}) or call mulla.webhooks(secret).',
+      );
+    }
+
+    return new Webhook(resolved, options);
   }
 
   toJSON(): Record<string, unknown> {

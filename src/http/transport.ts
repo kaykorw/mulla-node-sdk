@@ -42,7 +42,9 @@ export class FetchTransport implements Transport {
         requestMayHaveBeenSent: false,
       });
     }
-    this.#fetch = resolved;
+    // Call through a wrapper so a fetch that depends on its receiver (e.g. window.fetch) is never
+    // invoked as a method of this transport ("Illegal invocation").
+    this.#fetch = (input, init) => resolved(input, init);
   }
 
   async send(request: Request): Promise<Response> {

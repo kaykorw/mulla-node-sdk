@@ -93,7 +93,7 @@ describe('secrets stay out of logs and dumps', () => {
   });
 
   it('does not put the key in connection error messages', async () => {
-    const { client, fake } = makeClient({ maxRetries: 0 });
+    const { client, fake } = makeClient({ max_retries: 0 });
     fake.pushConnectionError();
 
     const error = await caught(() => client.charges.retrieve('abc'));
@@ -112,7 +112,9 @@ describe('base URL', () => {
     ['file', 'file:///etc/passwd'],
     ['not a url', 'mulla'],
   ])('rejects %s', (_name, url) => {
-    expect(() => new MullaClient(KEY, { baseUrl: url, transport: new FakeTransport() })).toThrow(InvalidArgumentError);
+    expect(() => new MullaClient({ api_key: KEY, base_url: url, transport: new FakeTransport() })).toThrow(
+      InvalidArgumentError,
+    );
   });
 
   it.each([
@@ -122,7 +124,9 @@ describe('base URL', () => {
     ['docker', 'http://host.docker.internal:5605/gateway'],
     ['dev tld', 'http://mulla.test/gateway'],
   ])('allows plain http for %s', (_name, url) => {
-    expect(new MullaClient(KEY, { baseUrl: url, transport: new FakeTransport() }).baseUrl).toMatch(/\/gateway\/v1$/);
+    expect(new MullaClient({ api_key: KEY, base_url: url, transport: new FakeTransport() }).baseUrl).toMatch(
+      /\/gateway\/v1$/,
+    );
   });
 });
 
@@ -172,6 +176,6 @@ describe('request input', () => {
   });
 
   it('works with the default transport', () => {
-    expect(new MullaClient(KEY)).toBeInstanceOf(MullaClient);
+    expect(new MullaClient({ api_key: KEY })).toBeInstanceOf(MullaClient);
   });
 });
