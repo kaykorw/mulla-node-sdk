@@ -2,7 +2,7 @@
 
 <!-- x-release-please-start-version -->
 
-> This guide applies to `@mulla/nodejs` **0.1.2** and the Mulla API **v1**. See [Versioning and compatibility](#versioning-and-compatibility).
+> This guide applies to `@mulla/nodejs` **0.2.0** and the Mulla API **v1**. See [Versioning and compatibility](#versioning-and-compatibility).
 
 <!-- x-release-please-end -->
 
@@ -714,7 +714,7 @@ Methods return typed objects (`Charge`, `Payout`, `Invoice`…) with camelCase f
 
 | Package version | Mulla API | Tested in CI on                   |
 | --------------- | --------- | --------------------------------- |
-| 0.1.2           | v1        | Node.js 20, 22 and 24; Bun latest |
+| 0.2.0           | v1        | Node.js 20, 22 and 24; Bun latest |
 
 <!-- x-release-please-end -->
 
