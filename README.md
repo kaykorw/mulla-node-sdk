@@ -463,7 +463,7 @@ Common filters are `page`, `limit`, `status`, `keyword`, `startDate`, `endDate`,
 Every error the SDK throws extends `MullaError`, so you can catch them all at once or one type at a time:
 
 ```ts
-import { InvalidRequestError, MullaError, PermissionError } from '@mulla/nodejs';
+import { ApiError, InvalidRequestError, MullaError, PermissionError } from '@mulla/nodejs';
 
 try {
   await mulla.payouts.initiate(params);
@@ -473,14 +473,15 @@ try {
   } else if (error instanceof PermissionError) {
     // The key is missing a scope, or this server's IP isn't allowed.
   } else if (error instanceof MullaError) {
-    console.error(error.message); // includes the error code and, often, a hint on how to fix it
+    console.error(error.message); // the server's message, as sent
+    if (error instanceof ApiError && error.hint) console.error(error.hint); // how to fix it, when the SDK knows
   } else {
     throw error;
   }
 }
 ```
 
-API errors carry `statusCode`, `errorCode` and `body` (the full error response). See [Errors](#errors) for the full list.
+`error.message` is exactly what Mulla sent. API errors also carry `statusCode`, `errorCode`, `hint` (how to fix it, or `null`), `body`, `headers` and `rawBody`; the last three are left out of `console.log(error)` to keep it short. A `PermissionError` for a missing scope has `requiredScope`. See [Errors](#errors) for the full list.
 
 ### Avoid duplicate payments
 

@@ -2,7 +2,8 @@ import type { Response } from './http/response.js';
 
 export class MullaError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
-    super(message, options);
+    // Pass `cause` only when there is one, or console output shows `[cause]: undefined`.
+    super(message, options?.cause !== undefined ? { cause: options.cause } : undefined);
     this.name = new.target.name;
   }
 }
@@ -26,23 +27,38 @@ export interface ApiErrorInit {
   body?: Record<string, unknown> | null;
   headers?: Record<string, string>;
   rawBody?: string | null;
+  /** Overrides the hint the SDK picks from `errorCode`. */
+  hint?: string | null;
   cause?: unknown;
 }
 
 export class ApiError extends MullaError {
   readonly statusCode: number;
   readonly errorCode: string | null;
-  readonly body: Record<string, unknown> | null;
-  readonly headers: Record<string, string>;
-  readonly rawBody: string | null;
+  /** How to fix the error, when the SDK knows. Kept out of `message`, which is the server's text as sent. */
+  declare readonly hint: string | null;
+  /** The parsed error response. */
+  declare readonly body: Record<string, unknown> | null;
+  declare readonly headers: Record<string, string>;
+  declare readonly rawBody: string | null;
 
   constructor(message: string, init: ApiErrorInit) {
     super(message, { cause: init.cause });
     this.statusCode = init.statusCode;
     this.errorCode = init.errorCode ?? null;
-    this.body = init.body ?? null;
-    this.headers = init.headers ?? {};
-    this.rawBody = init.rawBody ?? null;
+    // Non-enumerable, so console.log(error) shows the message and codes instead of every response header.
+    hide(this, {
+      hint: init.hint !== undefined ? init.hint : this.errorCode !== null ? (HINTS[this.errorCode] ?? null) : null,
+      body: init.body ?? null,
+      headers: init.headers ?? {},
+      rawBody: init.rawBody ?? null,
+    });
+  }
+}
+
+function hide(target: object, values: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(values)) {
+    Object.defineProperty(target, key, { value, enumerable: false, writable: false, configurable: true });
   }
 }
 
@@ -50,7 +66,15 @@ export class InvalidRequestError extends ApiError {}
 
 export class AuthenticationError extends ApiError {}
 
-export class PermissionError extends ApiError {}
+export class PermissionError extends ApiError {
+  /** The scope the key is missing, for `API_KEY_SCOPE_DENIED`, when known. */
+  readonly requiredScope: string | null;
+
+  constructor(message: string, init: ApiErrorInit & { requiredScope?: string | null }) {
+    super(message, init);
+    this.requiredScope = init.requiredScope ?? null;
+  }
+}
 
 export class NotFoundError extends ApiError {}
 
@@ -86,7 +110,7 @@ export function errorFromResponse(response: Response): ApiError {
   const json = response.json();
   const body = json !== null && !Array.isArray(json) ? json : null;
   const errorCode = typeof body?.errorCode === 'string' ? body.errorCode : null;
-  const message = buildMessage(status, errorCode, body);
+  const message = buildMessage(status, body);
   const init: ApiErrorInit = {
     statusCode: status,
     errorCode,
@@ -107,22 +131,16 @@ export function errorFromResponse(response: Response): ApiError {
   return new ApiError(message, init);
 }
 
-function buildMessage(status: number, errorCode: string | null, body: Record<string, unknown> | null): string {
+function buildMessage(status: number, body: Record<string, unknown> | null): string {
   let serverMessage: unknown = body?.message;
   if (Array.isArray(serverMessage)) {
     serverMessage = serverMessage.map(String).join('; ');
   }
   if (typeof serverMessage !== 'string' || serverMessage === '') {
-    serverMessage = `Mulla API request failed with HTTP ${status}`;
+    return `Mulla API request failed with HTTP ${status}`;
   }
 
-  let message = errorCode !== null ? `[${errorCode}] ${serverMessage as string}` : (serverMessage as string);
-  const hint = errorCode !== null ? HINTS[errorCode] : undefined;
-  if (hint !== undefined) {
-    message += ` — ${hint}`;
-  }
-
-  return message;
+  return serverMessage;
 }
 
 function retryAfter(response: Response, body: Record<string, unknown> | null): number | null {
