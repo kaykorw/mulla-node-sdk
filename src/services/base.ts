@@ -51,14 +51,18 @@ export abstract class BaseService {
       return error;
     }
 
-    return new PermissionError(`${error.message} Required scope: ${scope as string}.`, {
+    const withScope = new PermissionError(error.message, {
       statusCode: error.statusCode,
       errorCode: error.errorCode,
       body: error.body,
       headers: error.headers,
       rawBody: error.rawBody,
-      cause: error,
+      hint: `${error.hint ?? 'Add the missing scope in the Mulla dashboard.'} Required scope: ${scope as string}.`,
+      requiredScope: scope as string,
     });
+    withScope.stack = error.stack;
+
+    return withScope;
   }
 
   protected async send<T extends Model>(

@@ -161,12 +161,19 @@ export class LoggingMiddleware implements MiddlewareHandler {
   readonly #log: LogFunction;
 
   constructor(logger: Logger) {
-    this.#log =
+    const log: LogFunction =
       typeof logger === 'function'
         ? logger
         : (level, message, context) => {
             logger[level](message, context);
           };
+    this.#log = (level, message, context) => {
+      try {
+        log(level, message, context);
+      } catch {
+        /* ignore logger failures */
+      }
+    };
   }
 
   async handle(request: Request, next: Next): Promise<Response> {

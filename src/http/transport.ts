@@ -42,7 +42,8 @@ export class FetchTransport implements Transport {
         requestMayHaveBeenSent: false,
       });
     }
-    this.#fetch = resolved;
+    // Unbound call: some fetch implementations throw "Illegal invocation" when called as a method.
+    this.#fetch = (input, init) => resolved(input, init);
   }
 
   async send(request: Request): Promise<Response> {

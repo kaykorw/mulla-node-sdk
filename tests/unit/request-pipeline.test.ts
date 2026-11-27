@@ -13,7 +13,7 @@ import { BASE, caught, charge, CHARGE, KEY, makeClient } from './helpers.js';
 
 describe('request pipeline', () => {
   it('sends auth, client context and idempotency headers on POST', async () => {
-    const { client, fake } = makeClient({ lang: 'fr', appInfo: 'my-shop/1.0' });
+    const { client, fake } = makeClient({ lang: 'fr', app_info: { name: 'my-shop', version: '1.0' } });
     fake.pushJson(charge());
 
     await client.charges.initiate({ provider: Provider.MTN_RW, amount: 5000, phoneNumber: '250788000000' });
@@ -112,7 +112,7 @@ describe('request pipeline', () => {
   });
 
   it('gives up after maxRetries', async () => {
-    const { client, fake } = makeClient({ maxRetries: 1 });
+    const { client, fake } = makeClient({ max_retries: 1 });
     fake.pushError(500, 'INTERNAL').pushError(500, 'INTERNAL');
 
     await expect(client.charges.retrieve('abc')).rejects.toBeInstanceOf(ApiServerError);
@@ -120,7 +120,7 @@ describe('request pipeline', () => {
   });
 
   it('surfaces a connection error after retries', async () => {
-    const { client, fake } = makeClient({ maxRetries: 0 });
+    const { client, fake } = makeClient({ max_retries: 0 });
     fake.pushConnectionError('Could not resolve host');
 
     await expect(client.charges.retrieve('abc')).rejects.toBeInstanceOf(ConnectionError);
@@ -207,7 +207,7 @@ describe('request pipeline', () => {
       warn: (m: string) => lines.push(`warn ${m}`),
       error: (m: string) => lines.push(`error ${m}`),
     };
-    const { client, fake } = makeClient({ logger, maxRetries: 0 });
+    const { client, fake } = makeClient({ logger, max_retries: 0 });
     fake.pushError(404, 'CHARGE_NOT_FOUND');
 
     await expect(client.charges.retrieve('abc')).rejects.toThrow();

@@ -92,7 +92,8 @@ export interface PayInvoiceParams extends PayParams {
 }
 
 export interface CreateWebhookEndpointParams {
-  url: string;
+  /** Defaults to the client's `webhook_url` option. */
+  url?: string;
   isActive?: boolean;
 }
 

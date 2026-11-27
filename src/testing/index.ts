@@ -22,7 +22,7 @@ type Queued = Response | Error | ((request: Request) => Response | Promise<Respo
  * run your code, then assert on the requests that were sent.
  *
  *     const fake = new FakeTransport().pushJson({ id: 'chg_1', status: 'PENDING' });
- *     const mulla = new MullaClient('sk_test_abc_xyz', { transport: fake });
+ *     const mulla = new MullaClient({ api_key: 'sk_test_abc_xyz', transport: fake });
  */
 export class FakeTransport implements Transport {
   readonly #queue: Queued[] = [];

@@ -39,7 +39,7 @@ describe('errorFromResponse', () => {
     expect(error.errorCode).toBe(code);
   });
 
-  it('adds an actionable hint', () => {
+  it('keeps the server message as sent and puts the hint in its own field', () => {
     const error = errorFromResponse(
       new Response(
         403,
@@ -47,8 +47,9 @@ describe('errorFromResponse', () => {
         '{"statusCode":403,"message":"Key environment mismatch","errorCode":"API_KEY_ENVIRONMENT_MISMATCH"}',
       ),
     );
-    expect(error.message).toContain('[API_KEY_ENVIRONMENT_MISMATCH] Key environment mismatch — ');
-    expect(error.message).toContain('sk_test_');
+    expect(error.message).toBe('Key environment mismatch');
+    expect(error.hint).toContain('sk_test_');
+    expect(error.errorCode).toBe('API_KEY_ENVIRONMENT_MISMATCH');
   });
 
   it('handles the Nest fallback shape without an errorCode', () => {
@@ -65,6 +66,22 @@ describe('errorFromResponse', () => {
     expect(error).toBeInstanceOf(ApiServerError);
     expect(error.message).toBe('Mulla API request failed with HTTP 503');
     expect(error.rawBody).toBe('<html>Bad gateway</html>');
+    expect(error.hint).toBeNull();
+  });
+
+  it('keeps the response out of console output', () => {
+    const error = errorFromResponse(
+      new Response(
+        400,
+        { 'cf-ray': 'abc', server: 'cloudflare' },
+        '{"statusCode":400,"message":"Request failed with status 400","timestamp":"x"}',
+      ),
+    );
+
+    expect(error.message).toBe('Request failed with status 400');
+    expect(Object.keys(error)).toEqual(expect.not.arrayContaining(['body', 'headers', 'rawBody', 'hint']));
+    expect(error.headers['cf-ray']).toBe('abc');
+    expect(error.body?.timestamp).toBe('x');
   });
 });
 
@@ -76,16 +93,20 @@ describe('scope errors', () => {
     const error = (await caught(() => client.payouts.list())) as PermissionError;
 
     expect(error).toBeInstanceOf(PermissionError);
-    expect(error.message.endsWith('Required scope: PAYOUTS.')).toBe(true);
+    expect(error.message).toBe('API key does not have the required scope');
+    expect(error.requiredScope).toBe('PAYOUTS');
+    expect(error.hint).toContain('Required scope: PAYOUTS.');
     expect(error.errorCode).toBe('API_KEY_SCOPE_DENIED');
-    expect(error.cause).toBeInstanceOf(PermissionError);
   });
 
   it('prefers the scope the server names', async () => {
     const { client, fake } = makeClient();
     fake.pushError(403, 'API_KEY_SCOPE_DENIED', 'Denied', { requiredScope: 'CUSTOMERS' });
 
-    await expect(client.charges.list()).rejects.toThrow('Required scope: CUSTOMERS.');
+    const error = (await caught(() => client.charges.list())) as PermissionError;
+
+    expect(error.message).toBe('Denied');
+    expect(error.requiredScope).toBe('CUSTOMERS');
   });
 
   it('names no scope for the webhook endpoint', async () => {

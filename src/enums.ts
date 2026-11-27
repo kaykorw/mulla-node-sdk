@@ -18,6 +18,14 @@ export function providerLabel(provider: Provider): string {
   return PROVIDER_LABELS[provider];
 }
 
+export const Language = {
+  EN: 'en',
+  FR: 'fr',
+  RW: 'rw',
+  SW: 'sw',
+} as const;
+export type Language = (typeof Language)[keyof typeof Language];
+
 export const Currency = {
   RWF: 'RWF',
   USD: 'USD',

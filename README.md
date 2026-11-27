@@ -86,12 +86,12 @@ This uses the sandbox, so no real money moves.
 MULLA_SECRET_KEY=sk_test_...
 ```
 
-**2. Create a client.** It reads `MULLA_SECRET_KEY` automatically:
+**2. Create a client.** Pass the key explicitly: the SDK never reads environment variables or `.env` files on its own. With Node.js 20+, load the file with `node --env-file=.env app.js`.
 
 ```ts
 import { MullaClient, Provider } from '@mulla/nodejs';
 
-const mulla = new MullaClient();
+const mulla = new MullaClient({ api_key: process.env.MULLA_SECRET_KEY });
 ```
 
 With CommonJS: `const { MullaClient, Provider } = require('@mulla/nodejs');`
@@ -158,7 +158,7 @@ The key prefix decides where requests go. You don't need to configure a URL.
 | `sk_test_` | Sandbox, no real money | `https://mfs.kayko.dev/gateway`  |
 | `sk_live_` | Production, real money | `https://core.mulla.app/gateway` |
 
-To use another server (for example a local one), set the `baseUrl` option or `MULLA_BASE_URL`. You can paste the URL exactly as the dashboard shows it; the SDK adds `/v1`.
+To use another server (for example a local one), set the `base_url` option. You can paste the URL exactly as the dashboard shows it; the SDK adds `/v1`.
 
 ### Amounts, phone numbers and field names
 
@@ -182,7 +182,7 @@ Each guide is a short, complete task. They all start from a client:
 ```ts
 import { MullaClient, Provider } from '@mulla/nodejs';
 
-const mulla = new MullaClient(); // reads MULLA_SECRET_KEY
+const mulla = new MullaClient({ api_key: process.env.MULLA_SECRET_KEY });
 ```
 
 ### Charge a phone number
@@ -463,7 +463,7 @@ Common filters are `page`, `limit`, `status`, `keyword`, `startDate`, `endDate`,
 Every error the SDK throws extends `MullaError`, so you can catch them all at once or one type at a time:
 
 ```ts
-import { InvalidRequestError, MullaError, PermissionError } from '@mulla/nodejs';
+import { ApiError, InvalidRequestError, MullaError, PermissionError } from '@mulla/nodejs';
 
 try {
   await mulla.payouts.initiate(params);
@@ -473,14 +473,15 @@ try {
   } else if (error instanceof PermissionError) {
     // The key is missing a scope, or this server's IP isn't allowed.
   } else if (error instanceof MullaError) {
-    console.error(error.message); // includes the error code and, often, a hint on how to fix it
+    console.error(error.message); // the server's message, as sent
+    if (error instanceof ApiError && error.hint) console.error(error.hint); // how to fix it, when the SDK knows
   } else {
     throw error;
   }
 }
 ```
 
-API errors carry `statusCode`, `errorCode` and `body` (the full error response). See [Errors](#errors) for the full list.
+`error.message` is exactly what Mulla sent. API errors also carry `statusCode`, `errorCode`, `hint` (how to fix it, or `null`), `body`, `headers` and `rawBody`; the last three are left out of `console.log(error)` to keep it short. A `PermissionError` for a missing scope has `requiredScope`. See [Errors](#errors) for the full list.
 
 ### Avoid duplicate payments
 
@@ -522,7 +523,7 @@ import { MullaClient } from '@mulla/nodejs';
 import { FakeTransport } from '@mulla/nodejs/testing';
 
 const fake = new FakeTransport().pushJson({ id: 'chg_1', status: 'PENDING', amount: 5000 });
-const mulla = new MullaClient('sk_test_abc_xyz', { transport: fake });
+const mulla = new MullaClient({ api_key: 'sk_test_abc_xyz', transport: fake });
 
 await checkout(mulla); // your code
 
@@ -578,20 +579,29 @@ Before you switch to real money, check that:
 
 ### Client options
 
-Pass them as the second argument: `new MullaClient(key, options)`. Unknown options throw an `InvalidArgumentError`.
+Pass one options object: `new MullaClient({ api_key, ...options })`. `new MullaClient('sk_test_...')` is a shorthand for `{ api_key }`. Option names are snake_case; unknown options throw an `InvalidArgumentError` (with a hint if you used the camelCase spelling). `undefined`, `null` and `''` mean "not set", so values from an unset environment variable fall back to the default.
 
-| Option       | Default              | Description                                                                                           |
-| ------------ | -------------------- | ----------------------------------------------------------------------------------------------------- |
-| `baseUrl`    | From the key prefix  | Server URL. Must use HTTPS, except for local hosts such as `localhost`.                               |
-| `timeout`    | `30000`              | Time limit for each request, in milliseconds.                                                         |
-| `maxRetries` | `2`                  | Extra attempts for failed requests that are safe to retry. `0` turns retries off.                     |
-| `lang`       | API default          | Language of API messages: `en`, `fr`, `rw` or `sw`.                                                   |
-| `appInfo`    | —                    | Your app's name and version (`'my-shop/1.4'`), added to the User-Agent.                               |
-| `logger`     | —                    | `console`, pino, winston, or `(level, message, context) => {}`. Keys and bodies are never logged.     |
-| `fetch`      | Global `fetch`       | A custom `fetch`, for example one that goes through a proxy.                                          |
-| `middleware` | `[]`                 | Functions `(request, next) => next(request)` that can change requests, for example to add a trace ID. |
-| `deviceId`   | Derived from the key | Sent as the `x-device-id` header.                                                                     |
-| `transport`  | Built on `fetch`     | Replaces the HTTP layer. Mostly for tests (see `FakeTransport`).                                      |
+Every option is checked when the client is created, so a wrong callback fails at startup instead of on the first payment.
+
+| Option                 | Default              | Description                                                                                                                     |
+| ---------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `api_key`              | — (required)         | Your secret key, `sk_test_...` or `sk_live_...`.                                                                                |
+| `environment`          | From the key prefix  | `Environment.TEST` or `Environment.PRODUCTION`. A guard: creating the client fails if the key belongs to the other environment. |
+| `base_url`             | From the key prefix  | Server URL. Must use HTTPS, except for local hosts such as `localhost`.                                                         |
+| `webhook_secret`       | —                    | Default secret for `mulla.webhooks()`. Never logged or printed.                                                                 |
+| `webhook_url`          | —                    | Default URL for `mulla.webhookEndpoint.create()`. Must use HTTPS (http only for localhost).                                     |
+| `timeout`              | `30000`              | Time limit for each request, in milliseconds.                                                                                   |
+| `max_retries`          | `2`                  | Extra attempts for failed requests that are safe to retry. `0` turns retries off.                                               |
+| `lang`                 | API default          | Language of API messages: `Language.EN`, `FR`, `RW` or `SW` (or the strings `'en'`, ...).                                       |
+| `device_id`            | Derived from the key | A UUID v4, sent as the `x-device-id` header.                                                                                    |
+| `app_info`             | —                    | `{ name, version?, url? }`, added to the User-Agent. Restricted to header-safe characters.                                      |
+| `logger`               | —                    | `console`, pino, winston, or `(level, message, context) => {}`. Keys and bodies are never logged; a throwing logger is ignored. |
+| `fetch`                | Global `fetch`       | A custom `fetch` function, for example one that goes through a proxy. Can't be combined with `transport`.                       |
+| `middleware`           | `[]`                 | `(request, next) => next(request)` functions or `{ handle(request, next) }` objects, for example to add a trace ID.             |
+| `transport`            | Built on `fetch`     | An object with `send(request)` that replaces the HTTP layer. Mostly for tests (see `FakeTransport`).                            |
+| `retry_strategy`       | Exponential backoff  | Advanced: an object with `shouldRetry()` and `delay()`. Can't be combined with `max_retries`.                                   |
+| `environment_resolver` | Official servers     | Advanced: an object with `resolveBaseUrl()`.                                                                                    |
+| `sleep`                | `setTimeout`         | Advanced: how retries wait. Tests pass `async () => {}`.                                                                        |
 
 ### Per-request options
 
@@ -607,12 +617,15 @@ Pass them as the last argument of any method, for example `mulla.charges.initiat
 
 ### Environment variables
 
-| Variable           | Used for                                                    |
-| ------------------ | ----------------------------------------------------------- |
-| `MULLA_SECRET_KEY` | The API key, when you don't pass one to `new MullaClient()` |
-| `MULLA_BASE_URL`   | The server URL, when you don't pass `baseUrl`               |
+The SDK never reads environment variables or `.env` files, so configuration can't be picked up by accident (for example a live key leaking into tests). Read them in your app and pass them in:
 
-The SDK never reads the webhook secret on its own. Pass it as `secret`; the examples use `MULLA_WEBHOOK_SECRET`.
+```ts
+const mulla = new MullaClient({
+  api_key: process.env.MULLA_SECRET_KEY,
+  base_url: process.env.MULLA_BASE_URL,
+  webhook_secret: process.env.MULLA_WEBHOOK_SECRET,
+});
+```
 
 ### Statuses
 
@@ -661,7 +674,7 @@ All of them extend `MullaError`. The ones with an HTTP status also extend `ApiEr
 
 ### Retry rules
 
-The SDK retries a failed request up to `maxRetries` times, waiting longer each time (from 0.5 s up to 8 s). It follows the server's `Retry-After` header when there is one.
+The SDK retries a failed request up to `max_retries` times, waiting longer each time (from 0.5 s up to 8 s). It follows the server's `Retry-After` header when there is one.
 
 | Request                                         | Retried after                                                                        |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -681,19 +694,19 @@ Methods return typed objects (`Charge`, `Payout`, `Invoice`…) with camelCase f
 
 ## Troubleshooting
 
-| Problem                                                      | Likely cause and fix                                                                                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| Webhook returns `400` saying the body "was already parsed"   | A JSON parser ran before the handler. Use `express.raw()` on that route, or `rawBody: true` in NestJS.                         |
-| Webhook returns `400` because the signature doesn't match    | Wrong secret. Test and live endpoints have different secrets, and `rotateSecret()` replaces the old one.                       |
-| `PermissionError` with `API_KEY_SCOPE_DENIED`                | The key lacks the scope for that service. Add it in the dashboard.                                                             |
-| `PermissionError` with `API_KEY_ENVIRONMENT_MISMATCH`        | A test key is calling production, or the other way round. Remove `baseUrl` and let the key decide.                             |
-| `PermissionError` with `API_KEY_IP_DENIED`                   | Your server's IP isn't on the key's allowlist.                                                                                 |
-| `VALIDATION_FAILED` with "Invalid Phone Number"              | The number isn't a valid mobile number. Rwandan numbers are converted for you; other countries need the full `+` format.       |
-| `InvalidArgumentError` about an unknown field                | A misspelled or snake_case field, such as `phone_number`. Use camelCase: `phoneNumber`.                                        |
-| `InvalidArgumentError` about the base URL                    | `baseUrl` must use HTTPS, except for local hosts.                                                                              |
-| `InvalidArgumentError` about a missing API key               | `MULLA_SECRET_KEY` isn't set in this process. With Node.js 20+, you can load a `.env` file with `node --env-file=.env app.js`. |
-| `waitForFinalStatus` returns an object that is still pending | It timed out (after 2 minutes by default) and returned the latest state. Rely on webhooks, or raise `timeoutMs`.               |
-| Charges end up `EXPIRED`                                     | The customer didn't approve the prompt in time. Ask them to check their phone, then start a new charge.                        |
+| Problem                                                      | Likely cause and fix                                                                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Webhook returns `400` saying the body "was already parsed"   | A JSON parser ran before the handler. Use `express.raw()` on that route, or `rawBody: true` in NestJS.                   |
+| Webhook returns `400` because the signature doesn't match    | Wrong secret. Test and live endpoints have different secrets, and `rotateSecret()` replaces the old one.                 |
+| `PermissionError` with `API_KEY_SCOPE_DENIED`                | The key lacks the scope for that service. Add it in the dashboard.                                                       |
+| `PermissionError` with `API_KEY_ENVIRONMENT_MISMATCH`        | A test key is calling production, or the other way round. Remove `base_url` and let the key decide.                      |
+| `PermissionError` with `API_KEY_IP_DENIED`                   | Your server's IP isn't on the key's allowlist.                                                                           |
+| `VALIDATION_FAILED` with "Invalid Phone Number"              | The number isn't a valid mobile number. Rwandan numbers are converted for you; other countries need the full `+` format. |
+| `InvalidArgumentError` about an unknown field                | A misspelled or snake_case field, such as `phone_number`. Use camelCase: `phoneNumber`.                                  |
+| `InvalidArgumentError` about the base URL                    | `base_url` must use HTTPS, except for local hosts.                                                                       |
+| `InvalidArgumentError` about a missing API key               | `api_key` was empty. The SDK doesn't read `.env` itself: load it with `node --env-file=.env app.js` and pass the value.  |
+| `waitForFinalStatus` returns an object that is still pending | It timed out (after 2 minutes by default) and returned the latest state. Rely on webhooks, or raise `timeoutMs`.         |
+| Charges end up `EXPIRED`                                     | The customer didn't approve the prompt in time. Ask them to check their phone, then start a new charge.                  |
 
 ## Versioning and compatibility
 

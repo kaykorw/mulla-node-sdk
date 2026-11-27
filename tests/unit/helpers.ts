@@ -10,11 +10,12 @@ export interface TestClient {
   sleeps: number[];
 }
 
-export function makeClient(options: MullaOptions = {}): TestClient {
+export function makeClient(options: Partial<MullaOptions> = {}): TestClient {
   const fake = new FakeTransport();
   const sleeps: number[] = [];
-  const client = new MullaClient(KEY, {
-    baseUrl: BASE,
+  const client = new MullaClient({
+    api_key: KEY,
+    base_url: BASE,
     transport: fake,
     sleep: async (ms) => {
       sleeps.push(ms);

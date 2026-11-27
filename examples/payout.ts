@@ -1,11 +1,11 @@
 /**
  * Payout: sends money from your Mulla balance to a phone.
  *
- *   MULLA_SECRET_KEY=sk_test_... npx tsx examples/payout.ts 250788000000
+ *   npx tsx --env-file=.env examples/payout.ts 250788000000
  */
 import { InvalidRequestError, MullaClient } from '@mulla/nodejs';
 
-const mulla = new MullaClient();
+const mulla = new MullaClient({ api_key: process.env.MULLA_SECRET_KEY });
 
 try {
   const payout = await mulla.payouts.initiate({
