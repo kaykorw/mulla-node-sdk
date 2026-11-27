@@ -1,6 +1,6 @@
 {
   "name": "@mulla/nodejs",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Official Node.js library for the Mulla payment gateway: MTN Mobile Money and Airtel Money (Rwanda).",
   "keywords": [
     "mulla",

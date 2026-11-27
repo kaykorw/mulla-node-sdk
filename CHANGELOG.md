@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/kaykorw/mulla-node-sdk/compare/v0.1.2...v0.2.0) (2026-11-27)
+
+
+### Features
+
+* enhance error handling with actionable hints and required scope in PermissionError ([b9ab570](https://github.com/kaykorw/mulla-node-sdk/commit/b9ab5704b84da19ef494cc5b29ab8c038d91a7bd))
+* Refactor MullaClient configuration and options ([ffdb804](https://github.com/kaykorw/mulla-node-sdk/commit/ffdb804875147c72cae5942b3b40d98e4acd0b34))
+
 ## [0.1.2](https://github.com/kaykorw/mulla-node-sdk/compare/v0.1.1...v0.1.2) (2026-11-20)
 
 
